@@ -229,8 +229,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _setupTiming: 1
-  _managers:
-  - {fileID: 40309405}
+  _managers: []
 --- !u!4 &1183214291
 Transform:
   m_ObjectHideFlags: 0

@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using _Project.Scripts.Match3.Input;
 using _Project.Scripts.Match3.Utility;
 using UnityEngine;
 
@@ -15,10 +14,17 @@ namespace _Project.Scripts.Match3.Actor
 
         private bool isMoving = false;
 
+        private Board _gameBoard;
+
         private void Start()
         {
             _spriteRenderer = this.GetComponent<SpriteRenderer>();
             SetSpriteColor();
+        }
+        
+        public void SetBoard(Board board)
+        {
+            _gameBoard = board;
         }
         
         private void SetSpriteColor()
@@ -51,8 +57,10 @@ namespace _Project.Scripts.Match3.Actor
             {
                 if (Vector3.Distance(transform.position, destination) < 0.01f)
                 {
-                    transform.position = destination;
-                    SetCoord((int)destination.x,(int)destination.y);
+                    if (_gameBoard != null)
+                    {
+                        _gameBoard.PlaceGamePiece(this, (int) destination.x, (int) destination.y);
+                    }
                     break;
                 }
 

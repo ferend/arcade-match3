@@ -1,11 +1,12 @@
+using System;
 using UnityEngine;
 
 namespace _Project.Scripts.Match3.Actor
 {
     public class Tile : MonoBehaviour
     {
-        private int _xIndex;
-        private int _yIndex;
+        public int _xIndex;
+        public int _yIndex;
         
         private Board _gameBoard;
         
@@ -15,6 +16,21 @@ namespace _Project.Scripts.Match3.Actor
             _xIndex = x;
             _yIndex = y;
             _gameBoard = board;
+        }
+
+        public void OnMouseEnter()
+        {
+            _gameBoard.DragToTile(this);
+        }
+
+        public void OnMouseDown()
+        {
+            _gameBoard.ClickTile(this);
+
+        }
+        public void OnMouseUp()
+        {
+            _gameBoard.ReleaseTile();
         }
     }
 }

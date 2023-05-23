@@ -12,6 +12,11 @@ namespace _Project.Scripts.Match3.Utility
 
         public static float SmoothStep(float value) => value * value * (3 - 2 * value);
 
+        public static bool IsInBounds(int x, int y, int targetX, int targetY)
+        {
+            return (x >= 0 && x < targetX && y >= 0 && y<targetY);
+        }
+
         // Extension method for round.
         public static Vector3 Round(this Vector3 v)
         {
