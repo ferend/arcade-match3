@@ -1,4 +1,6 @@
-﻿using _Project.Scripts.Match3.Utility;
+﻿using System.Collections;
+using _Project.Scripts.Match3.Input;
+using _Project.Scripts.Match3.Utility;
 using UnityEngine;
 
 namespace _Project.Scripts.Match3.Actor
@@ -10,6 +12,8 @@ namespace _Project.Scripts.Match3.Actor
         
         private SpriteRenderer _spriteRenderer;
         private Color[] _colors = Constants.TILE_COLORS;
+
+        private bool isMoving = false;
 
         private void Start()
         {
@@ -30,5 +34,40 @@ namespace _Project.Scripts.Match3.Actor
             xIndex = x;
             yIndex = y;
         }
+
+        public void MoveGamePiece(int destX, int destY, float timeToMove)
+        {
+            if(isMoving) return;
+            StartCoroutine(MoveRoutine(new Vector3(destX, destY, 0), timeToMove));
+        }
+
+        private IEnumerator MoveRoutine(Vector3 destination, float timeToMove)
+        {
+            Vector3 startPos = transform.position;
+            float elapsedTime = 0f;
+            isMoving = true;
+
+            while (true)
+            {
+                if (Vector3.Distance(transform.position, destination) < 0.01f)
+                {
+                    transform.position = destination;
+                    SetCoord((int)destination.x,(int)destination.y);
+                    break;
+                }
+
+                elapsedTime += Time.deltaTime;
+                float t = Mathf.Clamp(elapsedTime / timeToMove, 0f,1f);
+                t = ExtensionMethods.SmoothStep(t);
+                
+                transform.position = Vector3.Lerp(startPos, destination, t);
+
+                yield return null;
+                
+            }
+
+            isMoving = false;
+        }
+        
     }
 }

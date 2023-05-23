@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Game.Utility._Project.Scripts.Game.Utility
+namespace _Project.Scripts.Match3.Utility
 {
     public static class ExtensionMethods
     {
@@ -8,11 +8,10 @@ namespace Game.Utility._Project.Scripts.Game.Utility
         // Given a min (a) and a max (b) value,
         // this returns the percentage at which
         // v lies, in that range
-        static float InverseLerp(float a, float b, float v)
-        {
-            return (v - a) / (b - a);
-        }
-		
+        static float InverseLerp(float a, float b, float v) => (v - a) / (b - a);
+
+        public static float SmoothStep(float value) => value * value * (3 - 2 * value);
+
         // Extension method for round.
         public static Vector3 Round(this Vector3 v)
         {
@@ -26,5 +25,10 @@ namespace Game.Utility._Project.Scripts.Game.Utility
             Quaternion.Euler(angleA, angleB, angleC);
 
         public static Quaternion InverseRotation(Quaternion rot) => Quaternion.Inverse(rot);
+    
+        private static Matrix4x4 _isoMatrix = Matrix4x4.Rotate(Quaternion.Euler(0, 45, 0));
+        public static Vector3 ToIso(this Vector3 input) => _isoMatrix.MultiplyPoint3x4(input);
     }
+    
+
 }
