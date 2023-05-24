@@ -2,8 +2,7 @@
     "name": "Match3.Board",
     "rootNamespace": "",
     "references": [
-        "GUID:15a6b44c6e54ea74f86ce21f573afa18",
-        "GUID:214b53953bc6e9741b9d42f71628ba1d"
+        "GUID:15a6b44c6e54ea74f86ce21f573afa18"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

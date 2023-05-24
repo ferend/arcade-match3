@@ -167,7 +167,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c461967233d643d5954560cfcbf444dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  swipe: {fileID: 11400000, guid: dff24eb1e5b323f4bbbce13647e47b9a, type: 2}
+  gameCamera: {fileID: 1825245322}
 --- !u!1 &529931667
 GameObject:
   m_ObjectHideFlags: 0
@@ -229,7 +229,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _setupTiming: 1
-  _managers: []
+  _managers:
+  - {fileID: 40309405}
 --- !u!4 &1183214291
 Transform:
   m_ObjectHideFlags: 0
@@ -270,7 +271,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1783133652}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0

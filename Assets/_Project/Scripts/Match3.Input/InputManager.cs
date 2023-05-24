@@ -1,25 +1,53 @@
-﻿using UnityEngine;
+﻿using _Project.Scripts.Match3.Actor;
+using UnityEngine;
 
 namespace _Project.Scripts.Match3.Input
 {
+    /// <summary>
+    /// Needs improvement.
+    /// </summary>
     public class InputManager : Manager
     {
-        [SerializeField] private Swipe swipe;
+        private Tile currentTile;
+        [SerializeField] private Camera gameCamera;
+        private int layerMask;
+
         public override void Setup()
         {
-            base.Setup();
-            Debug.Log("setup input manager");
+            layerMask = LayerMask.GetMask("Board");
         }
 
         public override void Tick(float deltaTime)
         {
-            base.Tick(deltaTime);
+                   
+            RaycastHit2D hit = Physics2D.Raycast(gameCamera.ScreenToWorldPoint(UnityEngine.Input.mousePosition), Vector2.zero, Mathf.Infinity, layerMask);
+
+            if (hit.collider != null)
+            {
+                currentTile = hit.collider.GetComponent<Tile>();
+                
+                if (currentTile != null)
+                {
+                    Debug.Log("3");
+                    currentTile.OnEnter();
+                }
+            }
+
             if (UnityEngine.Input.GetMouseButtonDown(0))
-                swipe.OnDown(UnityEngine.Input.mousePosition);
-            else if (UnityEngine.Input.GetMouseButton(0))
-                swipe.OnDrag(UnityEngine.Input.mousePosition);
-            else if (UnityEngine.Input.GetMouseButtonUp(0))
-                swipe.OnUp();
+            {
+                if (currentTile != null) 
+                {
+                        Debug.Log("1");
+                        currentTile.OnDown(); 
+                }
+            }
+
+            if (UnityEngine.Input.GetMouseButtonUp(0) && currentTile != null)
+            {
+                currentTile.OnUp();
+                Debug.Log("2");
+                currentTile = null;
+            }
         }
     }
 }

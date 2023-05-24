@@ -18,17 +18,17 @@ namespace _Project.Scripts.Match3.Actor
             _gameBoard = board;
         }
 
-        public void OnMouseEnter()
+        public void OnEnter()
         {
             _gameBoard.DragToTile(this);
         }
 
-        public void OnMouseDown()
+        public void OnDown()
         {
             _gameBoard.ClickTile(this);
 
         }
-        public void OnMouseUp()
+        public void OnUp()
         {
             _gameBoard.ReleaseTile();
         }
