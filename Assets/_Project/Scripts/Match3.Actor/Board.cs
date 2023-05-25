@@ -192,45 +192,7 @@ namespace _Project.Scripts.Match3.Actor
             return Mathf.Abs(start._yIndex - end._yIndex) == 1 && start._xIndex == end._xIndex;
         }
 
-        void HighlightMatches()
-        {
-            for (int i = 0; i < _width; i++)
-            {
-                for (int j = 0; j < _height; j++)
-                {
-                    HighlightMatchesAt(i, j);
-                }
-            }
-        }
-
-        private void HighlightMatchesAt(int x, int y)
-        {
-            HighlightOff(x, y);
-
-            var combMatches = CombineMatches(x, y);
-            if (combMatches.Count > 0)
-            {
-                foreach (GamePiece piece in combMatches)
-                {
-                    HighlightOn(piece);
-                }
-            }
-        }
-
-        private void HighlightOn(GamePiece piece)
-        {
-            SpriteRenderer sr;
-            sr = _tileArray[piece.xIndex, piece.yIndex].GetComponent<SpriteRenderer>();
-            sr.color = piece.GetComponent<SpriteRenderer>().color;
-        }
-
-        private void HighlightOff(int x, int y)
-        {
-            SpriteRenderer sr = _tileArray[x, y].GetComponent<SpriteRenderer>();
-
-            sr.color = new Color(sr.color.r, sr.color.g, sr.color.g, 0);
-        }
-
+        
         private List<GamePiece> CombineMatches(int x, int y, int minLenght = 3)
         {
             List<GamePiece> horMatches = FindHorizontalMatches(x, y, 3);
@@ -373,8 +335,6 @@ namespace _Project.Scripts.Match3.Actor
                 _gamePieceArray[x,y] = null;
                 Destroy(pieceToClear.gameObject);
             }
-
-            HighlightOff(x,y);
         }
         
         void ClearPieceAt(List<GamePiece> gamePieces)
