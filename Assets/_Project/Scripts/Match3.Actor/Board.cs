@@ -132,12 +132,15 @@ namespace _Project.Scripts.Match3.Actor
                         clickedPiece.MoveGamePiece(_clickedTile._xIndex,_clickedTile._yIndex,_swapTime);
                         targetPiece.MoveGamePiece(_targetTile._xIndex,_targetTile._yIndex,_swapTime);
                     }
+                    else
+                    {
+                        yield return _waitForSeconds;
+                        
+                        ClearPieceAt(clickedPieceMatches);
+                        ClearPieceAt(targetPieceMatches);
 
-                    yield return _waitForSeconds;
-
-                    HighlightMatchesAt(_clickedTile._xIndex,_clickedTile._yIndex);
-                    HighlightMatchesAt(_targetTile._xIndex,_targetTile._yIndex);
-                
+                    }
+                    
                     _clickedTile = null;
                     _targetTile = null;
                 }
@@ -295,6 +298,11 @@ namespace _Project.Scripts.Match3.Actor
 
                 GamePiece nextPiece = _gamePieceArray[nextX, nextY];
 
+                if (nextPiece == null)
+                {
+                    break;
+                }
+
                 if (nextPiece.gamePieceColor == startPiece.gamePieceColor && !matches.Contains(nextPiece))
                 {
                     matches.Add(nextPiece);
@@ -304,6 +312,7 @@ namespace _Project.Scripts.Match3.Actor
                 {
                     break;
                 }
+
             }
 
             if (matches.Count >= minLength)
@@ -313,6 +322,27 @@ namespace _Project.Scripts.Match3.Actor
 			
             return null;
 
+        }
+
+        void ClearPieceAt(int x, int y)
+        {
+            GamePiece pieceToClear = _gamePieceArray[x,y];
+
+            if (pieceToClear !=null)
+            {
+                _gamePieceArray[x,y] = null;
+                Destroy(pieceToClear.gameObject);
+            }
+
+            HighlightOff(x,y);
+        }
+        
+        void ClearPieceAt(List<GamePiece> gamePieces)
+        {
+            foreach (GamePiece piece in gamePieces)
+            {
+                ClearPieceAt(piece.xIndex, piece.yIndex);
+            }
         }
 
         private void OnDrawGizmos()
