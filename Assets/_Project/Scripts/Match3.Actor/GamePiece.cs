@@ -1,13 +1,16 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using _Project.Scripts.Match3.Utility;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace _Project.Scripts.Match3.Actor
 {
+    
     public class GamePiece : MonoBehaviour
     {
-        private int xIndex;
-        private int yIndex;
+        public int xIndex;
+        public int yIndex;
         
         private SpriteRenderer _spriteRenderer;
         private Color[] _colors = Constants.TILE_COLORS;
@@ -16,12 +19,14 @@ namespace _Project.Scripts.Match3.Actor
 
         private Board _gameBoard;
 
-        private void Start()
+        public Color gamePieceColor;
+
+        private void Awake()
         {
             _spriteRenderer = this.GetComponent<SpriteRenderer>();
             SetSpriteColor();
         }
-        
+
         public void SetBoard(Board board)
         {
             _gameBoard = board;
@@ -33,6 +38,7 @@ namespace _Project.Scripts.Match3.Actor
             int randomIndex = Random.Range(0, _colors.Length);
             Color randomColor = _colors[randomIndex];
             _spriteRenderer.color = randomColor;
+            gamePieceColor = randomColor;
         }
 
         public void SetCoord(int x, int y)

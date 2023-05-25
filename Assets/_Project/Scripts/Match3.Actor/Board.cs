@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using _Project.Scripts.Match3.Utility;
 using UnityEditor;
 using UnityEngine;
@@ -28,6 +30,7 @@ namespace _Project.Scripts.Match3.Actor
             InitGamePieceArray();
             CreateTiles();
             RandomFill();
+            HighlightMatches();
         }
 
         private void InitTileArray() => _tileArray = new Tile[_width, _height];
@@ -130,6 +133,141 @@ namespace _Project.Scripts.Match3.Actor
             return false;
         }
 
+        void HighlightMatches()
+        {
+            for (int i = 0; i < _width; i++)
+            {
+                for (int j = 0; j < _height; j++)
+                {
+                    SpriteRenderer sr = _tileArray[i, j].GetComponent<SpriteRenderer>();
+
+                    sr.color = new Color(sr.color.r, sr.color.g, sr.color.g, 0);
+
+                    List<GamePiece> horMatches = FindHorizontalMatches(i,j,3);
+                    List<GamePiece> verMatches = FindVerticalMatches(i,j,3);
+
+                    if (horMatches == null)
+                    {
+                        horMatches = new List<GamePiece>();
+                    }
+                    
+                    if (verMatches == null)
+                    {
+                        verMatches = new List<GamePiece>();
+                    }
+
+                    var combMatches = horMatches.Union(verMatches).ToList();
+                    if (combMatches.Count > 0)
+                    {
+                        foreach (GamePiece piece in combMatches)
+                        {
+                            sr = _tileArray[piece.xIndex, piece.yIndex].GetComponent<SpriteRenderer>();
+                            sr.color = piece.GetComponent<SpriteRenderer>().color;
+                        }
+                    }
+                }
+            }
+        }
+        
+        
+        List<GamePiece> FindHorizontalMatches(int startX, int startY, int minLenght = 3)
+        {
+            List<GamePiece> rightMatches = FindMatches(startX, startY, new Vector2(1, 0),2);
+            List<GamePiece> leftMatches = FindMatches(startX, startY, new Vector2(-1, 0),2);
+
+            rightMatches ??= new List<GamePiece>();
+            leftMatches ??= new List<GamePiece>();
+            
+            foreach (GamePiece piece in leftMatches)
+            {
+                if (!rightMatches.Contains(piece))
+                {
+                    rightMatches.Add(piece);
+                }
+            }
+            
+            return (rightMatches.Count >= minLenght) ? rightMatches : null ;
+        }
+        
+
+        List<GamePiece> FindVerticalMatches(int startX, int startY, int minLenght = 3)
+        {
+            List<GamePiece> upwardMatches = FindMatches(startX, startY, new Vector2(0, 1),2);
+            List<GamePiece> downwardMatches = FindMatches(startX, startY, new Vector2(0, -1),2);
+
+            upwardMatches ??= new List<GamePiece>();
+            downwardMatches ??= new List<GamePiece>();
+            
+            foreach (GamePiece piece in downwardMatches)
+            {
+                if (!upwardMatches.Contains(piece))
+                {
+                    upwardMatches.Add(piece);
+                }
+            }
+            
+            return (upwardMatches.Count >= minLenght) ? upwardMatches : null ;
+        }
+
+
+
+        List<GamePiece> FindMatches(int startX, int startY, Vector2 searchDirection, int minLength = 3)
+        {
+            List<GamePiece> matches = new List<GamePiece>();
+
+            GamePiece startPiece = null;
+
+            if (ExtensionMethods.IsInBounds(startX, startY,_width,_height))
+            {
+                startPiece = _gamePieceArray[startX, startY];
+            }
+
+            if (startPiece !=null)
+            {
+                matches.Add(startPiece);
+            }
+
+            else
+            {
+                return null;
+            }
+
+            int nextX;
+            int nextY;
+
+            int maxValue = (_width > _height) ? _width: _height;
+
+            for (int i = 1; i < maxValue - 1; i++)
+            {
+                nextX = startX + (int) Mathf.Clamp(searchDirection.x,-1,1) * i;
+                nextY = startY + (int) Mathf.Clamp(searchDirection.y,-1,1) * i;
+
+                if (!ExtensionMethods.IsInBounds(nextX, nextY,_width,_height))
+                {
+                    break;
+                }
+
+                GamePiece nextPiece = _gamePieceArray[nextX, nextY];
+
+                if (nextPiece.gamePieceColor == startPiece.gamePieceColor && !matches.Contains(nextPiece))
+                {
+                    matches.Add(nextPiece);
+                }
+
+                else
+                {
+                    break;
+                }
+            }
+
+            if (matches.Count >= minLength)
+            {
+                return matches;
+            }
+			
+            return null;
+
+        }
 
         private void OnDrawGizmos()
         {
