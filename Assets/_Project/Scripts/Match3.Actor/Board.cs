@@ -38,7 +38,7 @@ namespace _Project.Scripts.Match3.Actor
             InitTileArray();
             InitGamePieceArray();
             CreateTiles();
-            RandomFill();
+            FillBoard();
             //HighlightMatches();
         }
 
@@ -76,22 +76,54 @@ namespace _Project.Scripts.Match3.Actor
             gamePiece.SetCoord(x,y);
         }
 
-        void RandomFill()
+        void FillBoard()
         {
+            int maxIterations = 100;
+            int iterations = 0;
             for (int i = 0; i < _width; i++)
             {
                 for (int j = 0; j < _height; j++)
                 {
-                    GamePiece randomPiece = Instantiate(gamePiece, Vector3.zero, Quaternion.identity);
-                    if (randomPiece != null)
+                    GamePiece gamePiece = FillRandomAt(i, j);
+
+                    while (HasMatchOnFill(i,j))
                     {
-                        randomPiece.SetBoard(this);
-                        PlaceGamePiece(randomPiece,i,j);
-                        randomPiece.transform.parent = transform;
+                        ClearPieceAt(i,j);
+                        gamePiece = FillRandomAt(i, j);
+                        iterations++;
+                        if (iterations >= maxIterations)
+                        {
+                            break;
+                        }
                     }
                 }
             }
         }
+
+        private GamePiece FillRandomAt(int x, int y)
+        {
+            GamePiece randomPiece = Instantiate(gamePiece, Vector3.zero, Quaternion.identity);
+            if (randomPiece != null)
+            {
+                randomPiece.SetBoard(this);
+                PlaceGamePiece(randomPiece, x, y);
+                randomPiece.transform.parent = transform;
+                return randomPiece.GetComponent<GamePiece>();
+            }
+
+            return null;
+        }
+
+        bool HasMatchOnFill(int x, int y, int minLenght = 3)
+        {
+            List<GamePiece> leftMatches = FindMatches(x, y, new Vector2(-1, 0), minLenght);
+            List<GamePiece> downwardMatches = FindMatches(x, y, new Vector2(0, -1), minLenght);
+
+            leftMatches = ListCheck(leftMatches, ref downwardMatches);
+
+            return (leftMatches.Count > 0 || downwardMatches.Count > 0);
+        }
+
 
         public void ClickTile(Tile tile)
         {
@@ -204,15 +236,7 @@ namespace _Project.Scripts.Match3.Actor
             List<GamePiece> horMatches = FindHorizontalMatches(x, y, 3);
             List<GamePiece> verMatches = FindVerticalMatches(x, y, 3);
 
-            if (horMatches == null)
-            {
-                horMatches = new List<GamePiece>();
-            }
-
-            if (verMatches == null)
-            {
-                verMatches = new List<GamePiece>();
-            }
+            horMatches = ListCheck(horMatches, ref verMatches);
 
             var combMatches = horMatches.Union(verMatches).ToList();
             return combMatches;
@@ -323,6 +347,22 @@ namespace _Project.Scripts.Match3.Actor
             return null;
 
         }
+        
+        private List<GamePiece> ListCheck(List<GamePiece> leftMatches, ref List<GamePiece> downwardMatches)
+        {
+            if (leftMatches == null)
+            {
+                leftMatches = new List<GamePiece>();
+            }
+
+            if (downwardMatches == null)
+            {
+                downwardMatches = new List<GamePiece>();
+            }
+
+            return leftMatches;
+        }
+
 
         void ClearPieceAt(int x, int y)
         {
