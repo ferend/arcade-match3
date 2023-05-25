@@ -18,6 +18,8 @@ namespace _Project.Scripts.Match3.Utility
             Color.magenta
         };
 
+        public const float TILE_SWAP_TIME = 0.5f;
+
         #region UI
         public const float defaultTransitionDuration = 0.25f;
         public const float overlayTransitionDuration = 0.5f;

@@ -28,7 +28,6 @@ namespace _Project.Scripts.Match3.Input
                 
                 if (currentTile != null)
                 {
-                    Debug.Log("3");
                     currentTile.OnEnter();
                 }
             }
@@ -36,16 +35,14 @@ namespace _Project.Scripts.Match3.Input
             if (UnityEngine.Input.GetMouseButtonDown(0))
             {
                 if (currentTile != null) 
-                {
-                        Debug.Log("1");
-                        currentTile.OnDown(); 
+                { 
+                    currentTile.OnDown(); 
                 }
             }
 
             if (UnityEngine.Input.GetMouseButtonUp(0) && currentTile != null)
             {
                 currentTile.OnUp();
-                Debug.Log("2");
                 currentTile = null;
             }
         }
