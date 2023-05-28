@@ -348,51 +348,50 @@ namespace _Project.Scripts.Match3.Actor
         }
 
         // Overload for collapsecolumn method. It will look at list of gamepieces and find each gamepiece
+        List<GamePiece> CollapseColumn(int column, float collapseTime = 0.1f)
+        {
+            List<GamePiece> movingPieces = new List<GamePiece>();
+
+            for (int i = 0; i < _height - 1; i++)
+            {
+                if (_gamePieceArray[column, i] == null)
+                {
+                    for (int j = i + 1; j < _height; j++)
+                    {
+                        if (_gamePieceArray[column, j] != null)
+                        {
+                            _gamePieceArray[column, j].MoveGamePiece(column, i, collapseTime);
+                            _gamePieceArray[column, i] = _gamePieceArray[column, j];
+                            _gamePieceArray[column, i].SetCoord(column, i);
+
+                            if (!movingPieces.Contains(_gamePieceArray[column, i]))
+                            {
+                                movingPieces.Add(_gamePieceArray[column, i]);
+                            }
+
+                            _gamePieceArray[column, j] = null;
+                            break;
+
+                        }
+                    }
+                }
+            }
+            return movingPieces;
+
+        }
+
         List<GamePiece> CollapseColumn(List<GamePiece> gamePieces)
         {
             List<GamePiece> movingPieces = new List<GamePiece>();
             List<int> columnsToCollapse = GetColumns(gamePieces);
-            
+
             foreach (int column in columnsToCollapse)
             {
                 movingPieces = movingPieces.Union(CollapseColumn(column)).ToList();
             }
 
             return movingPieces;
-        }
 
-        List<GamePiece> CollapseColumn(int column, float collapseTime = 0.2F)
-        {
-            List<GamePiece> movingPieces = new List<GamePiece>();
-
-            for (int i = 0; i < _height - 1 ; i++)
-            {
-                if (_gamePieceArray[column, i] == null)
-                {
-                    // Start above the current tile pos. Move upward
-                    for (int j = i + 1; j < _height + 1; j++)
-                    {
-                        if (_gamePieceArray[column, j] != null)
-                        {
-                            // If we found game piece while going to top trigger move pos of game piece.
-                            _gamePieceArray[column, j].MoveGamePiece(column,i, collapseTime);
-                            _gamePieceArray[column, i] = _gamePieceArray[column, j];
-                            _gamePieceArray[column, i].SetCoord(column, i);
-                            
-                            // Track down the moving game pieces
-                            if (!movingPieces.Contains(_gamePieceArray[column , i]))
-                            {
-                                movingPieces.Add(_gamePieceArray[column,i]);
-                            }
-
-                            _gamePieceArray[column, j] = null;
-                            break;
-                        }
-                    }
-                }
-
-            }
-            return movingPieces;
         }
 
         List<int> GetColumns(List<GamePiece> gamePieces)
