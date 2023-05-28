@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -84,12 +83,12 @@ namespace _Project.Scripts.Match3.Actor
             {
                 for (int j = 0; j < _height; j++)
                 {
-                    GamePiece gamePiece = FillRandomAt(i, j);
+                    FillRandomAt(i, j);
 
                     while (HasMatchOnFill(i,j))
                     {
-                        ClearPieceAt(i,j);
-                        gamePiece = FillRandomAt(i, j);
+                        ClearPieceAtPosition(i,j);
+                        FillRandomAt(i, j);
                         iterations++;
                         if (iterations >= maxIterations)
                         {
@@ -100,7 +99,7 @@ namespace _Project.Scripts.Match3.Actor
             }
         }
 
-        private GamePiece FillRandomAt(int x, int y)
+        private void FillRandomAt(int x, int y)
         {
             GamePiece randomPiece = Instantiate(gamePiece, Vector3.zero, Quaternion.identity);
             if (randomPiece != null)
@@ -108,10 +107,8 @@ namespace _Project.Scripts.Match3.Actor
                 randomPiece.SetBoard(this);
                 PlaceGamePiece(randomPiece, x, y);
                 randomPiece.transform.parent = transform;
-                return randomPiece.GetComponent<GamePiece>();
+                randomPiece.GetComponent<GamePiece>();
             }
-
-            return null;
         }
 
         bool HasMatchOnFill(int x, int y, int minLenght = 3)
@@ -171,8 +168,8 @@ namespace _Project.Scripts.Match3.Actor
                         ClearPieceAt(clickedPieceMatches);
                         ClearPieceAt(targetPieceMatches);
                         
-                        CollapseColumn(clickedPieceMatches);
-                        CollapseColumn(targetPieceMatches);
+                        CollapseColumnByPieces(clickedPieceMatches);
+                        CollapseColumnByPieces(targetPieceMatches);
                     }
                     
                     _clickedTile = null;
@@ -195,10 +192,10 @@ namespace _Project.Scripts.Match3.Actor
         }
 
         
-        private List<GamePiece> CombineMatches(int x, int y, int minLenght = 3)
+        private List<GamePiece> CombineMatches(int x, int y)
         {
-            List<GamePiece> horMatches = FindHorizontalMatches(x, y, 3);
-            List<GamePiece> verMatches = FindVerticalMatches(x, y, 3);
+            List<GamePiece> horMatches = FindHorizontalMatches(x, y);
+            List<GamePiece> verMatches = FindVerticalMatches(x, y);
 
             horMatches = ListCheck(horMatches, ref verMatches);
 
@@ -328,13 +325,13 @@ namespace _Project.Scripts.Match3.Actor
         }
 
 
-        void ClearPieceAt(int x, int y)
+        void ClearPieceAtPosition(int x, int y)
         {
-            GamePiece pieceToClear = _gamePieceArray[x,y];
+            GamePiece pieceToClear = _gamePieceArray[x, y];
 
-            if (pieceToClear !=null)
+            if (pieceToClear != null)
             {
-                _gamePieceArray[x,y] = null;
+                _gamePieceArray[x, y] = null;
                 Destroy(pieceToClear.gameObject);
             }
         }
@@ -343,11 +340,10 @@ namespace _Project.Scripts.Match3.Actor
         {
             foreach (GamePiece piece in gamePieces)
             {
-                ClearPieceAt(piece.xIndex, piece.yIndex);
+                ClearPieceAtPosition(piece.xIndex, piece.yIndex);
             }
         }
 
-        // Overload for collapsecolumn method. It will look at list of gamepieces and find each gamepiece
         List<GamePiece> CollapseColumn(int column, float collapseTime = 0.1f)
         {
             List<GamePiece> movingPieces = new List<GamePiece>();
@@ -380,7 +376,7 @@ namespace _Project.Scripts.Match3.Actor
 
         }
 
-        List<GamePiece> CollapseColumn(List<GamePiece> gamePieces)
+        void CollapseColumnByPieces(List<GamePiece> gamePieces)
         {
             List<GamePiece> movingPieces = new List<GamePiece>();
             List<int> columnsToCollapse = GetColumns(gamePieces);
@@ -389,9 +385,6 @@ namespace _Project.Scripts.Match3.Actor
             {
                 movingPieces = movingPieces.Union(CollapseColumn(column)).ToList();
             }
-
-            return movingPieces;
-
         }
 
         List<int> GetColumns(List<GamePiece> gamePieces)
