@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using _Project.Scripts.Match3.Utility;
+using Unity.Plastic.Antlr3.Runtime.Misc;
 using UnityEditor;
 using UnityEngine;
 
@@ -15,9 +16,11 @@ namespace _Project.Scripts.Match3.Actor
     {
         private int _width = Constants.BOARD_WIDTH;
         private int _height = Constants.BOARD_HEIGHT;
+        public bool _canGetInput = true;
 
         private float _swapTime = Constants.TILE_SWAP_TIME;
-        private WaitForSeconds _waitForSeconds;
+        private WaitForSeconds _swapWaiter;
+        private WaitForSeconds _collapseWaiter;
 
         [SerializeField] private GameObject tilePrefab; 
         [SerializeField] private GamePiece gamePiece; 
@@ -29,7 +32,9 @@ namespace _Project.Scripts.Match3.Actor
 
         private void Awake()
         {
-            _waitForSeconds = new WaitForSeconds(_swapTime);
+            _swapWaiter = new WaitForSeconds(_swapTime);
+            _collapseWaiter = new WaitForSeconds(0.25f);
+            
         }
 
         private void Start()
@@ -123,34 +128,38 @@ namespace _Project.Scripts.Match3.Actor
 
         public void ClickTile(Tile tile)
         {
-            if(_clickedTile == null)
+            if(_clickedTile == null && _canGetInput)
                 _clickedTile = tile;
         }
 
         public void DragToTile(Tile tile)
         {
-            if (_clickedTile != null && IsNextTo(tile, _clickedTile)) 
+            if (_clickedTile != null && IsNextTo(tile, _clickedTile) && _canGetInput) 
                 _targetTile = tile;
         }
 
         public void ReleaseTile()
         {
-            if (_clickedTile != null && _targetTile != null)
+            if (_clickedTile != null && _targetTile != null  && _canGetInput )
             {
-                StartCoroutine(SwitchTiles(_clickedTile,_targetTile));
+                StartCoroutine(SwitchTiles(_clickedTile,_targetTile, () => _canGetInput = true));
             }
             
-            IEnumerator SwitchTiles(Tile current , Tile target)
+            IEnumerator SwitchTiles(Tile current , Tile target, Action OnComplete)
             {
+                _canGetInput = false;
+                
                 GamePiece clickedPiece = _gamePieceArray[current._xIndex, current._yIndex];
                 GamePiece targetPiece = _gamePieceArray[target._xIndex, target._yIndex];
+
 
                 if (targetPiece != null && clickedPiece != null)
                 {
                     clickedPiece.MoveGamePiece(_targetTile._xIndex,_targetTile._yIndex,_swapTime); 
+                    clickedPiece.MoveGamePiece(_targetTile._xIndex,_targetTile._yIndex,_swapTime); 
                     targetPiece.MoveGamePiece(_clickedTile._xIndex,_clickedTile._yIndex,_swapTime);
-
-                    yield return _waitForSeconds;
+                    
+                    yield return _swapWaiter;
 
                     List<GamePiece> clickedPieceMatches = CombineMatches(_clickedTile._xIndex, _clickedTile._yIndex);
                     List<GamePiece> targetPieceMatches = CombineMatches(_targetTile._xIndex, _targetTile._yIndex);
@@ -162,7 +171,7 @@ namespace _Project.Scripts.Match3.Actor
                     }
                     else
                     {
-                        yield return _waitForSeconds;
+                        yield return _swapWaiter;
 
                         StartCoroutine(ClearAndRefillBoard(clickedPieceMatches));
                         StartCoroutine(ClearAndRefillBoard(targetPieceMatches));
@@ -172,9 +181,10 @@ namespace _Project.Scripts.Match3.Actor
                     _targetTile = null;
                 }
 
-            }
+                OnComplete?.Invoke();
 
-     
+            }
+            
         }
 
         bool IsNextTo(Tile start , Tile end)
@@ -322,9 +332,7 @@ namespace _Project.Scripts.Match3.Actor
             {
                 return matches;
             }
-			
             return null;
-
         }
         
         private List<GamePiece> ListCheck(List<GamePiece> leftMatches, ref List<GamePiece> downwardMatches)
@@ -374,7 +382,7 @@ namespace _Project.Scripts.Match3.Actor
                     {
                         if (_gamePieceArray[column, j] != null)
                         {
-                            _gamePieceArray[column, j].MoveGamePiece(column, i, collapseTime);
+                            _gamePieceArray[column, j].MoveGamePiece(column, i, collapseTime * (j - i) );
                             _gamePieceArray[column, i] = _gamePieceArray[column, j];
                             _gamePieceArray[column, i].SetCoord(column, i);
 
@@ -432,19 +440,21 @@ namespace _Project.Scripts.Match3.Actor
         {
             List<GamePiece> movingPieces = new List<GamePiece>();
             List<GamePiece> matches = new List<GamePiece>();
-            
-            yield return _waitForSeconds;
 
-            
+            yield return _collapseWaiter;
+
+            _canGetInput = false;
+
             while (true)
             {
                 ClearPieceAt(gamePieces);
-                yield return _waitForSeconds;
                 
+                yield return _collapseWaiter;
                 movingPieces = CollapseColumnByPieces(gamePieces);
-                yield return _waitForSeconds;
-                
+
+                yield return _collapseWaiter;
                 matches = CombineMatches(movingPieces);
+                
                 if (matches.Count == 0)
                 {
                     break;
@@ -454,7 +464,10 @@ namespace _Project.Scripts.Match3.Actor
             }
 
             yield return null;
+            _canGetInput = true;
         }
+        
+        
 
         private void OnDrawGizmos()
         {
