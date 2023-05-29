@@ -9,8 +9,8 @@ namespace _Project.Scripts.Match3.Actor
     
     public class GamePiece : MonoBehaviour
     {
-        public int xIndex;
-        public int yIndex;
+        internal int xIndex;
+        internal int yIndex;
         
         private SpriteRenderer _spriteRenderer;
         private Color[] _colors = Constants.TILE_COLORS;

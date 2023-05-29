@@ -38,7 +38,6 @@ namespace _Project.Scripts.Match3.Actor
             InitGamePieceArray();
             CreateTiles();
             FillBoard();
-            //HighlightMatches();
         }
 
         private void InitTileArray() => _tileArray = new Tile[_width, _height];
@@ -164,12 +163,9 @@ namespace _Project.Scripts.Match3.Actor
                     else
                     {
                         yield return _waitForSeconds;
-                        
-                        ClearPieceAt(clickedPieceMatches);
-                        ClearPieceAt(targetPieceMatches);
-                        
-                        CollapseColumnByPieces(clickedPieceMatches);
-                        CollapseColumnByPieces(targetPieceMatches);
+
+                        StartCoroutine(ClearAndRefillBoard(clickedPieceMatches));
+                        StartCoroutine(ClearAndRefillBoard(targetPieceMatches));
                     }
                     
                     _clickedTile = null;
@@ -196,11 +192,34 @@ namespace _Project.Scripts.Match3.Actor
         {
             List<GamePiece> horMatches = FindHorizontalMatches(x, y);
             List<GamePiece> verMatches = FindVerticalMatches(x, y);
+            
+            if (horMatches == null)
+            {
+                horMatches = new List<GamePiece>();
+            }
+
+            if (verMatches == null)
+            {
+                verMatches = new List<GamePiece>();
+            }
 
             horMatches = ListCheck(horMatches, ref verMatches);
 
             var combMatches = horMatches.Union(verMatches).ToList();
             return combMatches;
+        }
+        
+        List<GamePiece> CombineMatches(List<GamePiece> gamePieces)
+        {
+            List<GamePiece> matches = new List<GamePiece>();
+
+            foreach (GamePiece piece in gamePieces)
+            {
+                if (piece == null) continue;
+                matches = matches.Union(CombineMatches(piece.xIndex, piece.yIndex)).ToList();
+            }
+
+            return matches;
         }
 
 
@@ -242,8 +261,7 @@ namespace _Project.Scripts.Match3.Actor
             
             return (upwardMatches.Count >= minLenght) ? upwardMatches : null ;
         }
-
-
+        
 
         List<GamePiece> FindMatches(int startX, int startY, Vector2 searchDirection, int minLength = 3)
         {
@@ -376,7 +394,7 @@ namespace _Project.Scripts.Match3.Actor
 
         }
 
-        void CollapseColumnByPieces(List<GamePiece> gamePieces)
+        List<GamePiece> CollapseColumnByPieces(List<GamePiece> gamePieces)
         {
             List<GamePiece> movingPieces = new List<GamePiece>();
             List<int> columnsToCollapse = GetColumns(gamePieces);
@@ -385,6 +403,8 @@ namespace _Project.Scripts.Match3.Actor
             {
                 movingPieces = movingPieces.Union(CollapseColumn(column)).ToList();
             }
+
+            return movingPieces;
         }
 
         List<int> GetColumns(List<GamePiece> gamePieces)
@@ -400,6 +420,40 @@ namespace _Project.Scripts.Match3.Actor
             }
 
             return columns;
+        }
+
+        IEnumerator ClearAndRefillBoard(List<GamePiece> gamePieces)
+        {
+            StartCoroutine(ClearAndCollapse(gamePieces));
+            yield return null;
+        }
+
+        IEnumerator ClearAndCollapse(List<GamePiece> gamePieces)
+        {
+            List<GamePiece> movingPieces = new List<GamePiece>();
+            List<GamePiece> matches = new List<GamePiece>();
+            
+            yield return _waitForSeconds;
+
+            
+            while (true)
+            {
+                ClearPieceAt(gamePieces);
+                yield return _waitForSeconds;
+                
+                movingPieces = CollapseColumnByPieces(gamePieces);
+                yield return _waitForSeconds;
+                
+                matches = CombineMatches(movingPieces);
+                if (matches.Count == 0)
+                {
+                    break;
+                }
+                
+                yield return StartCoroutine(ClearAndCollapse(matches));
+            }
+
+            yield return null;
         }
 
         private void OnDrawGizmos()
