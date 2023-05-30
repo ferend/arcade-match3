@@ -1,16 +1,13 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using _Project.Scripts.Match3.Utility;
-using Unity.Plastic.Antlr3.Runtime.Misc;
 using UnityEditor;
 using UnityEngine;
 
 namespace _Project.Scripts.Match3.Actor
 {
-    /// <summary>
-    /// Two-Dimensional array for tiles.
-    /// </summary>
     
     public class Board : MonoBehaviour
     {
@@ -79,7 +76,7 @@ namespace _Project.Scripts.Match3.Actor
             gamePiece.SetCoord(x,y);
         }
 
-        void FillBoard()
+        void FillBoard(int falseYOffset = 0)
         {
             int maxIterations = 100;
             int iterations;
@@ -90,13 +87,13 @@ namespace _Project.Scripts.Match3.Actor
                 {
                     if (_gamePieceArray[i, j] == null)
                     {
-                        FillRandomAt(i, j);
+                        FillRandomAt(i, j,falseYOffset);
                         iterations = 0;
 
                         while (HasMatchOnFill(i, j))
                         {
                             ClearPieceAtPosition(i, j);
-                            FillRandomAt(i, j);
+                            FillRandomAt(i, j, falseYOffset);
                             iterations++;
 
                             if (iterations >= maxIterations)
@@ -109,13 +106,20 @@ namespace _Project.Scripts.Match3.Actor
             }
         }
 
-        private void FillRandomAt(int x, int y)
+        private void FillRandomAt(int x, int y, int falseYOffset = 0 )
         {
             GamePiece randomPiece = Instantiate(gamePiece, Vector3.zero, Quaternion.identity);
             if (randomPiece != null)
             {
                 randomPiece.SetBoard(this);
                 PlaceGamePiece(randomPiece, x, y);
+                
+                if (falseYOffset != 0)
+                {
+                    randomPiece.transform.position = new Vector3(x, y + falseYOffset, 0);
+                    randomPiece.MoveGamePiece(x,y,0.1f);
+                }
+                
                 randomPiece.transform.parent = transform;
                 randomPiece.GetComponent<GamePiece>();
             }
@@ -438,12 +442,6 @@ namespace _Project.Scripts.Match3.Actor
 
         IEnumerator ClearAndRefillBoard(List<GamePiece> gamePieces)
         {
-            StartCoroutine(ClearAndCollapse(gamePieces));
-            yield return null;
-        }
-
-        IEnumerator ClearAndCollapse(List<GamePiece> gamePieces)
-        {
             yield return _collapseWaiter;
             
             while (true)
@@ -463,22 +461,15 @@ namespace _Project.Scripts.Match3.Actor
                     break;
                 }
                 
-                yield return StartCoroutine(ClearAndCollapse(matches));
-
+                yield return StartCoroutine(ClearAndRefillBoard(matches));
+                
             }
 
             yield return _collapseWaiter;
-            StartCoroutine(RefillBoard());
+            FillBoard(10);
             _canGetInput = true;
         }
-
-        IEnumerator RefillBoard()
-        {
-            FillBoard();
-            yield return null;
-        }
         
-
         private void OnDrawGizmos()
         {
             for (int i = 0; i < _width; i++)
