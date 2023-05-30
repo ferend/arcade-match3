@@ -82,21 +82,27 @@ namespace _Project.Scripts.Match3.Actor
         void FillBoard()
         {
             int maxIterations = 100;
-            int iterations = 0;
+            int iterations;
+      
             for (int i = 0; i < _width; i++)
             {
                 for (int j = 0; j < _height; j++)
                 {
-                    FillRandomAt(i, j);
-
-                    while (HasMatchOnFill(i,j))
+                    if (_gamePieceArray[i, j] == null)
                     {
-                        ClearPieceAtPosition(i,j);
                         FillRandomAt(i, j);
-                        iterations++;
-                        if (iterations >= maxIterations)
+                        iterations = 0;
+
+                        while (HasMatchOnFill(i, j))
                         {
-                            break;
+                            ClearPieceAtPosition(i, j);
+                            FillRandomAt(i, j);
+                            iterations++;
+
+                            if (iterations >= maxIterations)
+                            {
+                                break;
+                            }
                         }
                     }
                 }
@@ -438,22 +444,19 @@ namespace _Project.Scripts.Match3.Actor
 
         IEnumerator ClearAndCollapse(List<GamePiece> gamePieces)
         {
-            List<GamePiece> movingPieces = new List<GamePiece>();
-            List<GamePiece> matches = new List<GamePiece>();
-
             yield return _collapseWaiter;
-
-            _canGetInput = false;
-
+            
             while (true)
             {
+                _canGetInput = false;
+
                 ClearPieceAt(gamePieces);
                 
                 yield return _collapseWaiter;
-                movingPieces = CollapseColumnByPieces(gamePieces);
+                List<GamePiece> movingPieces = CollapseColumnByPieces(gamePieces);
 
                 yield return _collapseWaiter;
-                matches = CombineMatches(movingPieces);
+                List<GamePiece> matches = CombineMatches(movingPieces);
                 
                 if (matches.Count == 0)
                 {
@@ -461,12 +464,19 @@ namespace _Project.Scripts.Match3.Actor
                 }
                 
                 yield return StartCoroutine(ClearAndCollapse(matches));
+
             }
 
-            yield return null;
+            yield return _collapseWaiter;
+            StartCoroutine(RefillBoard());
             _canGetInput = true;
         }
-        
+
+        IEnumerator RefillBoard()
+        {
+            FillBoard();
+            yield return null;
+        }
         
 
         private void OnDrawGizmos()
