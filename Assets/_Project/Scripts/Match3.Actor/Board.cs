@@ -191,7 +191,6 @@ namespace _Project.Scripts.Match3.Actor
                 if (targetPiece != null && clickedPiece != null)
                 {
                     clickedPiece.MoveGamePiece(_targetTile._xIndex,_targetTile._yIndex,_swapTime); 
-                    clickedPiece.MoveGamePiece(_targetTile._xIndex,_targetTile._yIndex,_swapTime); 
                     targetPiece.MoveGamePiece(_clickedTile._xIndex,_clickedTile._yIndex,_swapTime);
                     
                     yield return _swapWaiter;
