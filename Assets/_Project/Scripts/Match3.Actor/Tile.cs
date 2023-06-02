@@ -5,6 +5,8 @@ namespace _Project.Scripts.Match3.Actor
 {
     public class Tile : MonoBehaviour
     {
+        [SerializeField] internal TileType TileType = TileType.Normal;
+
         public int _xIndex;
         public int _yIndex;
         
@@ -17,6 +19,12 @@ namespace _Project.Scripts.Match3.Actor
             _yIndex = y;
             _gameBoard = board;
         }
+
+        private void Start()
+        {
+            DisableObstacleCollider();
+        }
+        
 
         public void OnEnter()
         {
@@ -31,6 +39,14 @@ namespace _Project.Scripts.Match3.Actor
         public void OnUp()
         {
             _gameBoard.ReleaseTile();
+        }
+        
+        private void DisableObstacleCollider()
+        {
+            if (TileType == TileType.Obstacle)
+            {
+                this.GetComponent<BoxCollider2D>().enabled = false;
+            }
         }
     }
 }

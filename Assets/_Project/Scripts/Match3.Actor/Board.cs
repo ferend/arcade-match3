@@ -5,27 +5,32 @@ using System.Linq;
 using _Project.Scripts.Match3.Utility;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace _Project.Scripts.Match3.Actor
 {
     
     public class Board : MonoBehaviour
     {
+        
         private int _width = Constants.BOARD_WIDTH;
         private int _height = Constants.BOARD_HEIGHT;
-        public bool _canGetInput = true;
+        private bool _canGetInput = true;
 
         private float _swapTime = Constants.TILE_SWAP_TIME;
         private WaitForSeconds _swapWaiter;
         private WaitForSeconds _collapseWaiter;
-
-        [SerializeField] private GameObject tilePrefab; 
-        [SerializeField] private GamePiece gamePiece; 
+        
+        [SerializeField] private GameObject tileNormalPrefab; 
+        [SerializeField] private GamePiece gamePiece;
+        [SerializeField] private StartingTile[] startingTiles;
+        
         private Tile[,] _tileArray;
         private GamePiece[,] _gamePieceArray;
 
-        private Tile _clickedTile;
-        private Tile _targetTile;
+        public Tile _clickedTile;
+        public Tile _targetTile;
+        
 
         private void Awake()
         {
@@ -38,27 +43,42 @@ namespace _Project.Scripts.Match3.Actor
         {
             InitTileArray();
             InitGamePieceArray();
-            CreateTiles();
+            SetupTiles();
             FillBoard();
         }
 
         private void InitTileArray() => _tileArray = new Tile[_width, _height];
         private void InitGamePieceArray() => _gamePieceArray = new GamePiece[_width, _height];
 
-        private void CreateTiles()
+        private void SetupTiles()
         {
+            foreach (StartingTile sTile in startingTiles)
+            {
+                if(sTile == null) return;
+                CreateTile(sTile.tilePrefab,sTile.x,sTile.y);
+            }
             for (int i = 0; i < _width; i++)
             {
                 for (int j = 0; j < _height; j++)
                 {
-                    GameObject tile = Instantiate(tilePrefab, new Vector3(i, j, 0),Quaternion.identity);
-                    _tileArray[i, j] = tile.GetComponent<Tile>();
-                    tile.transform.parent = transform;
-                    
-                    _tileArray[i,j].InitTile(i,j,this);
+                    if (_tileArray[i, j] == null)
+                    {
+                        CreateTile(tileNormalPrefab, i, j);
+                    }
                 }
                 
             }
+        }
+
+        private void CreateTile(GameObject prefab, int x, int y, int z = 0)
+        {
+            if(prefab == null) return;
+            
+            GameObject tile = Instantiate(prefab, new Vector3(x, y, z), Quaternion.identity);
+            _tileArray[x, y] = tile.GetComponent<Tile>();
+            tile.transform.parent = transform;
+
+            _tileArray[x, y].InitTile(x, y, this);
         }
 
         public void PlaceGamePiece(GamePiece gamePiece, int x , int y )
@@ -85,7 +105,7 @@ namespace _Project.Scripts.Match3.Actor
             {
                 for (int j = 0; j < _height; j++)
                 {
-                    if (_gamePieceArray[i, j] == null)
+                    if (_gamePieceArray[i, j] == null && _tileArray[i,j].TileType != TileType.Obstacle)
                     {
                         FillRandomAt(i, j,falseYOffset);
                         iterations = 0;
@@ -144,7 +164,7 @@ namespace _Project.Scripts.Match3.Actor
 
         public void DragToTile(Tile tile)
         {
-            if (_clickedTile != null && IsNextTo(tile, _clickedTile) && _canGetInput) 
+            if (_clickedTile != null &&  IsNextTo(tile, _clickedTile) && _canGetInput) 
                 _targetTile = tile;
         }
 
@@ -154,7 +174,13 @@ namespace _Project.Scripts.Match3.Actor
             {
                 StartCoroutine(SwitchTiles(_clickedTile,_targetTile, () => _canGetInput = true));
             }
-            
+            else
+            {
+                Debug.Log("amkl oyunu ");
+                _clickedTile = null;
+                _targetTile = null;
+            }
+
             IEnumerator SwitchTiles(Tile current , Tile target, Action OnComplete)
             {
                 _canGetInput = false;
@@ -386,7 +412,7 @@ namespace _Project.Scripts.Match3.Actor
 
             for (int i = 0; i < _height - 1; i++)
             {
-                if (_gamePieceArray[column, i] == null)
+                if (_gamePieceArray[column, i] == null && _tileArray[column,i].TileType != TileType.Obstacle)
                 {
                     for (int j = i + 1; j < _height; j++)
                     {
