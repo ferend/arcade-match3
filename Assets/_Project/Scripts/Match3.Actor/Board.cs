@@ -176,7 +176,6 @@ namespace _Project.Scripts.Match3.Actor
             }
             else
             {
-                Debug.Log("amkl oyunu ");
                 _clickedTile = null;
                 _targetTile = null;
             }
