@@ -1,4 +1,4 @@
-﻿using _Project.Scripts.Match3.Actor;
+﻿using _Project.Scripts.Match3.Game.TileActor;
 using UnityEngine;
 
 namespace _Project.Scripts.Match3.Input

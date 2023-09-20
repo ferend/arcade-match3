@@ -2,12 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using _Project.Scripts.Match3.Actor;
+using _Project.Scripts.Match3.Game.PieceActor;
+using _Project.Scripts.Match3.Game.TileActor;
 using _Project.Scripts.Match3.Utility;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Serialization;
 
-namespace _Project.Scripts.Match3.Actor
+namespace _Project.Scripts.Match3.Game.BoardActor
 {
     
     public class Board : MonoBehaviour

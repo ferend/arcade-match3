@@ -1,8 +1,9 @@
 {
-    "name": "Match3.Board",
+    "name": "Match3.Game",
     "rootNamespace": "",
     "references": [
-        "GUID:15a6b44c6e54ea74f86ce21f573afa18"
+        "GUID:15a6b44c6e54ea74f86ce21f573afa18",
+        "GUID:903c5ac2cb4372a4883710ff3f03bcd7"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

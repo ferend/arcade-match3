@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections;
+using _Project.Scripts.Match3.Game.BoardActor;
 using _Project.Scripts.Match3.Utility;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace _Project.Scripts.Match3.Actor
+namespace _Project.Scripts.Match3.Game.PieceActor
 {
     
     public class GamePiece : MonoBehaviour
