@@ -33,12 +33,14 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         public Tile _clickedTile;
         public Tile _targetTile;
         
+        public event Action<int, int, int> ClearPiecePFXEvent;
+        public event Action<int ,int, int, int> BreakTilePFXEvent;
+
 
         private void Awake()
         {
             _swapWaiter = new WaitForSeconds(_swapTime);
             _collapseWaiter = new WaitForSeconds(0.25f);
-            
         }
 
         private void Start()
@@ -404,6 +406,8 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             foreach (GamePiece piece in gamePieces)
             {
                 ClearPieceAtPosition(piece.xIndex, piece.yIndex);
+                ClearPiecePFXEvent?.Invoke(piece.xIndex,piece.yIndex,0);
+
             }
 
         }
@@ -412,8 +416,9 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         private void BreakTileAt(int x , int y)
         {
             Tile tileToBreak = _tileArray[x, y];
-            if (tileToBreak != null)
+            if (tileToBreak != null && tileToBreak.tileType == TileType.Breakable)
             {
+                BreakTilePFXEvent?.Invoke(tileToBreak.breakableValue, x, y, 0);
                 tileToBreak.BreakTile();
             }
         }
@@ -528,11 +533,11 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
         IEnumerator ClearAndRefillBoard(List<GamePiece> gamePieces)
         {
-            ToggleHighlightPieces(gamePieces,true);
+            //ToggleHighlightPieces(gamePieces,true);
 
             yield return _collapseWaiter;
 
-            ToggleHighlightPieces(gamePieces, false);
+            //ToggleHighlightPieces(gamePieces, false);
 
             while (true)
             {

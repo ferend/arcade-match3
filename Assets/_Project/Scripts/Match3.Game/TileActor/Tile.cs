@@ -19,7 +19,7 @@ namespace _Project.Scripts.Match3.Game.TileActor
 
         private SpriteRenderer _spriteRenderer;
 
-        [SerializeField] private int breakableValue = 0;
+        public int breakableValue = 0;
         [SerializeField] private Sprite[] breakableSprites;
         [SerializeField] private Color normalColor;
 
