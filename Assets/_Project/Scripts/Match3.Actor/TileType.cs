@@ -3,6 +3,7 @@
     public enum TileType
     {
         Normal,
-        Obstacle
+        Obstacle,
+        Breakable
     }
 }

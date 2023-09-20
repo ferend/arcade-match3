@@ -98,9 +98,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 294eaf264e62d1a4fb9a07f4a2cd82a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  TileType: 1
+  tileType: 1
   _xIndex: 0
   _yIndex: 0
+  breakableValue: 0
+  breakableSprites: []
+  normalColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!61 &1434162977241484113
 BoxCollider2D:
   m_ObjectHideFlags: 0

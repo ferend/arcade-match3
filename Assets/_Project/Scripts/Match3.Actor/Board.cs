@@ -105,7 +105,7 @@ namespace _Project.Scripts.Match3.Actor
             {
                 for (int j = 0; j < _height; j++)
                 {
-                    if (_gamePieceArray[i, j] == null && _tileArray[i,j].TileType != TileType.Obstacle)
+                    if (_gamePieceArray[i, j] == null && _tileArray[i,j].tileType != TileType.Obstacle)
                     {
                         FillRandomAt(i, j,falseYOffset);
                         iterations = 0;
@@ -389,6 +389,7 @@ namespace _Project.Scripts.Match3.Actor
         {
             GamePiece pieceToClear = _gamePieceArray[x, y];
 
+
             if (pieceToClear != null)
             {
                 _gamePieceArray[x, y] = null;
@@ -402,7 +403,66 @@ namespace _Project.Scripts.Match3.Actor
             {
                 ClearPieceAtPosition(piece.xIndex, piece.yIndex);
             }
+
         }
+
+
+        private void BreakTileAt(int x , int y)
+        {
+            Tile tileToBreak = _tileArray[x, y];
+            if (tileToBreak != null)
+            {
+                tileToBreak.BreakTile();
+            }
+        }
+
+        private void BreakTileAt(List<GamePiece> gamePieces)
+        {
+            foreach (GamePiece piece in gamePieces)
+            {
+                if (piece != null)
+                {
+                    BreakTileAt(piece.xIndex,piece.yIndex);
+                }
+            }
+        }
+        
+        void HighlightTileOff(int x, int y)
+        {
+            if (_tileArray[x, y].tileType != TileType.Breakable)
+            {
+                SpriteRenderer spriteRenderer = _tileArray[x, y].GetComponent<SpriteRenderer>();
+                spriteRenderer.color = new Color(spriteRenderer.color.r, spriteRenderer.color.g, spriteRenderer.color.b, 0);
+            }
+        }
+
+        void HighlightTileOn(int x, int y, Color col)
+        {
+            if (_tileArray[x, y].tileType != TileType.Breakable)
+            {
+                SpriteRenderer spriteRenderer = _tileArray[x, y].GetComponent<SpriteRenderer>();
+                spriteRenderer.color = col;
+            }
+        }
+
+        void ToggleHighlightPieces(List<GamePiece> gamePieces, bool highlight)
+        {
+            foreach (GamePiece piece in gamePieces)
+            {
+                if (piece != null)
+                {
+                    if (highlight)
+                    {
+                        HighlightTileOn(piece.xIndex, piece.yIndex, piece.GetComponent<SpriteRenderer>().color);
+                    }
+                    else
+                    {
+                        HighlightTileOff(piece.xIndex, piece.yIndex);
+                    }
+                }
+            }
+        }
+
 
         List<GamePiece> CollapseColumn(int column, float collapseTime = 0.1f)
         {
@@ -410,7 +470,7 @@ namespace _Project.Scripts.Match3.Actor
 
             for (int i = 0; i < _height - 1; i++)
             {
-                if (_gamePieceArray[column, i] == null && _tileArray[column,i].TileType != TileType.Obstacle)
+                if (_gamePieceArray[column, i] == null && _tileArray[column,i].tileType != TileType.Obstacle)
                 {
                     for (int j = i + 1; j < _height; j++)
                     {
@@ -466,13 +526,18 @@ namespace _Project.Scripts.Match3.Actor
 
         IEnumerator ClearAndRefillBoard(List<GamePiece> gamePieces)
         {
+            ToggleHighlightPieces(gamePieces,true);
+
             yield return _collapseWaiter;
-            
+
+            ToggleHighlightPieces(gamePieces, false);
+
             while (true)
             {
                 _canGetInput = false;
 
                 ClearPieceAt(gamePieces);
+                BreakTileAt(gamePieces);
                 
                 yield return _collapseWaiter;
                 List<GamePiece> movingPieces = CollapseColumnByPieces(gamePieces);
