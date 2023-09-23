@@ -5,7 +5,7 @@ namespace _Project.Scripts.Match3.Game.Effects
     public class ParticlePlayer : MonoBehaviour
     {
         [SerializeField] private ParticleSystem[] allParticles;
-        [SerializeField] private float lifetime = 1f;
+        private float lifetime = 1f;
 
         private void Start()
         {

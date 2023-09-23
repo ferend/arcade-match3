@@ -6,13 +6,14 @@ namespace _Project.Scripts.Match3.Game
 {
     public class GameplaySystem : global::Game.System
     {
-        private ParticleManager particleManager;
+        private ParticleManager _particleManager;
         [SerializeField] private Board board;
         
         protected override void SetupManagers()
         {
             base.SetupManagers();
-            particleManager = GetManager<ParticleManager>();
+            _particleManager = GetManager<ParticleManager>();
+            _particleManager.Setup();
         }
 
         public override void Setup()
@@ -23,8 +24,8 @@ namespace _Project.Scripts.Match3.Game
 
         private void SetupEvents()
         {
-            board.ClearPiecePFXEvent += particleManager.ClearPiecePFXAt;
-            board.BreakTilePFXEvent += particleManager.BreakTilePFXAt;
+            board.ClearPiecePFXEvent += _particleManager.ClearPiecePFXAt;
+            board.BreakTilePFXEvent += _particleManager.BreakTilePFXAt;
         }
         
         
