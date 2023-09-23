@@ -352,6 +352,19 @@ MonoBehaviour:
     x: 2
     y: 3
     z: 0
+  - tilePrefab: {fileID: 1863056523224149403, guid: d0283ba3683c43a449a77b629bc5f774, type: 3}
+    x: 2
+    y: 5
+    z: 0
+  startingGamePieces:
+  - tilePrefab: {fileID: 9198947564679120487, guid: 16d236e1f3bd26d449e52435b5d00580, type: 3}
+    x: 0
+    y: 1
+    z: 0
+  - tilePrefab: {fileID: 9198947564679120487, guid: 16d236e1f3bd26d449e52435b5d00580, type: 3}
+    x: 1
+    y: 2
+    z: 0
   _clickedTile: {fileID: 0}
   _targetTile: {fileID: 0}
 --- !u!1 &1825245320

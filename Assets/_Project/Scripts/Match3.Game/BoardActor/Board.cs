@@ -26,6 +26,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         [SerializeField] private GameObject tileNormalPrefab; 
         [SerializeField] private GamePiece gamePiece;
         [SerializeField] private StartingTile[] startingTiles;
+        [SerializeField] private StartingTile[] startingGamePieces;
         
         private Tile[,] _tileArray;
         private GamePiece[,] _gamePieceArray;
@@ -48,6 +49,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             InitTileArray();
             InitGamePieceArray();
             SetupTiles();
+            SetupGamePieces();
             FillBoard();
         }
 
@@ -74,15 +76,48 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             }
         }
 
+        private void SetupGamePieces()
+        {
+            foreach (StartingTile sPiece in startingGamePieces)
+            {
+                if (sPiece != null)
+                {
+                    GamePiece piece = Instantiate(sPiece.tilePrefab, new Vector3(sPiece.x, sPiece.y, 0),
+                        Quaternion.identity).GetComponent<GamePiece>();
+                    
+                    CreateGamePiece(piece,sPiece.x,sPiece.y,10,0.1f);
+                }
+            }
+        }
+
         private void CreateTile(GameObject prefab, int x, int y, int z = 0)
         {
-            if(prefab == null) return;
+            if (prefab != null && ExtensionMethods.IsInBounds(x, y, _width, _height))
+            {
+                GameObject tile = Instantiate(prefab, new Vector3(x, y, z), Quaternion.identity);
+                _tileArray[x, y] = tile.GetComponent<Tile>();
+                tile.transform.parent = transform;
+                _tileArray[x, y].InitTile(x, y, this);    
+            }
             
-            GameObject tile = Instantiate(prefab, new Vector3(x, y, z), Quaternion.identity);
-            _tileArray[x, y] = tile.GetComponent<Tile>();
-            tile.transform.parent = transform;
+        }
+        
+        private void CreateGamePiece( GamePiece prefab, int x, int y, int falseYOffset = 0, float moveTime = 0.1f)
+        {
+            if (prefab != null && ExtensionMethods.IsInBounds(x, y, _width, _height))
+            {
+                prefab.SetBoard(this);
+                PlaceGamePiece(prefab, x, y);
 
-            _tileArray[x, y].InitTile(x, y, this);
+                if (falseYOffset != 0)
+                {
+                    prefab.transform.position = new Vector3(x, y + falseYOffset, 0);
+                    prefab.MoveGamePiece(x, y, 0.1f);
+                }
+
+                prefab.transform.parent = transform;
+                prefab.GetComponent<GamePiece>();
+            }
         }
 
         public void PlaceGamePiece(GamePiece gamePiece, int x , int y )
@@ -100,7 +135,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             gamePiece.SetCoord(x,y);
         }
 
-        void FillBoard(int falseYOffset = 0)
+        void FillBoard(int falseYOffset = 0, float moveTime = 0.1f)
         {
             int maxIterations = 100;
             int iterations;
@@ -132,20 +167,10 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
         private void FillRandomAt(int x, int y, int falseYOffset = 0 )
         {
-            GamePiece randomPiece = Instantiate(gamePiece, Vector3.zero, Quaternion.identity);
-            if (randomPiece != null)
+            if (ExtensionMethods.IsInBounds(x, y, _width, _height))
             {
-                randomPiece.SetBoard(this);
-                PlaceGamePiece(randomPiece, x, y);
-                
-                if (falseYOffset != 0)
-                {
-                    randomPiece.transform.position = new Vector3(x, y + falseYOffset, 0);
-                    randomPiece.MoveGamePiece(x,y,0.1f);
-                }
-                
-                randomPiece.transform.parent = transform;
-                randomPiece.GetComponent<GamePiece>();
+                GamePiece randomPiece = Instantiate(gamePiece, Vector3.zero, Quaternion.identity);
+                CreateGamePiece(randomPiece, x, y, falseYOffset);
             }
         }
 
