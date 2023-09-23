@@ -9,6 +9,7 @@ using _Project.Scripts.Match3.Game.TileActor;
 using _Project.Scripts.Match3.Utility;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace _Project.Scripts.Match3.Game.BoardActor
 {
@@ -16,11 +17,11 @@ namespace _Project.Scripts.Match3.Game.BoardActor
     public class Board : MonoBehaviour
     {
         
-        internal int _width = Constants.BOARD_WIDTH;
-        internal int _height = Constants.BOARD_HEIGHT;
+        internal readonly int Width = Constants.BOARD_WIDTH;
+        internal readonly int Height = Constants.BOARD_HEIGHT;
         private bool _canGetInput = true;
 
-        private float _swapTime = Constants.TILE_SWAP_TIME;
+        private readonly float _swapTime = Constants.TILE_SWAP_TIME;
         private WaitForSeconds _swapWaiter;
         private WaitForSeconds _collapseWaiter;
         
@@ -28,12 +29,15 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         [SerializeField] private GamePiece gamePiece;
         [SerializeField] private StartingTile[] startingTiles;
         [SerializeField] private StartingTile[] startingGamePieces;
+        [SerializeField] private GameObject columnBombPrefab;
+        [SerializeField] private GameObject rowBombPrefab;
+        [SerializeField] private GameObject adjacentBombPrefab;
         
         private Tile[,] _tileArray;
-        internal GamePiece[,] _gamePieceArray;
+        internal GamePiece[,] GamePieceArray;
 
-        public Tile _clickedTile;
-        public Tile _targetTile;
+        public Tile clickedTile;
+        public Tile targetTile;
         
         public event Action<int, int, int> ClearPiecePFXEvent;
         public event Action<int ,int, int, int> BreakTilePFXEvent;
@@ -54,8 +58,8 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             FillBoard();
         }
 
-        private void InitTileArray() => _tileArray = new Tile[_width, _height];
-        private void InitGamePieceArray() => _gamePieceArray = new GamePiece[_width, _height];
+        private void InitTileArray() => _tileArray = new Tile[Width, Height];
+        private void InitGamePieceArray() => GamePieceArray = new GamePiece[Width, Height];
 
         private void SetupTiles()
         {
@@ -64,9 +68,9 @@ namespace _Project.Scripts.Match3.Game.BoardActor
                 if(sTile == null) return;
                 CreateTile(sTile.tilePrefab,sTile.x,sTile.y);
             }
-            for (int i = 0; i < _width; i++)
+            for (int i = 0; i < Width; i++)
             {
-                for (int j = 0; j < _height; j++)
+                for (int j = 0; j < Height; j++)
                 {
                     if (_tileArray[i, j] == null)
                     {
@@ -93,7 +97,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
         private void CreateTile(GameObject prefab, int x, int y, int z = 0)
         {
-            if (prefab != null && ExtensionMethods.IsInBounds(x, y, _width, _height))
+            if (prefab != null && ExtensionMethods.IsInBounds(x, y, Width, Height))
             {
                 GameObject tile = Instantiate(prefab, new Vector3(x, y, z), Quaternion.identity);
                 _tileArray[x, y] = tile.GetComponent<Tile>();
@@ -105,7 +109,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         
         private void CreateGamePiece( GamePiece prefab, int x, int y, int falseYOffset = 0, float moveTime = 0.1f)
         {
-            if (prefab != null && ExtensionMethods.IsInBounds(x, y, _width, _height))
+            if (prefab != null && ExtensionMethods.IsInBounds(x, y, Width, Height))
             {
                 prefab.SetBoard(this);
                 PlaceGamePiece(prefab, x, y);
@@ -128,9 +132,9 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             gamePiece.transform.position = new Vector3(x, y, 0);
             gamePiece.transform.rotation = Quaternion.identity;
             
-            if (ExtensionMethods.IsInBounds(x, y, _width, _height))
+            if (ExtensionMethods.IsInBounds(x, y, Width, Height))
             {            
-                _gamePieceArray[x, y] = gamePiece;
+                GamePieceArray[x, y] = gamePiece;
             }
             
             gamePiece.SetCoord(x,y);
@@ -141,11 +145,11 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             int maxIterations = 100;
             int iterations;
       
-            for (int i = 0; i < _width; i++)
+            for (int i = 0; i < Width; i++)
             {
-                for (int j = 0; j < _height; j++)
+                for (int j = 0; j < Height; j++)
                 {
-                    if (_gamePieceArray[i, j] == null && _tileArray[i,j].tileType != TileType.Obstacle)
+                    if (GamePieceArray[i, j] == null && _tileArray[i,j].tileType != TileType.Obstacle)
                     {
                         FillRandomAt(i, j,falseYOffset);
                         iterations = 0;
@@ -168,7 +172,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
         private void FillRandomAt(int x, int y, int falseYOffset = 0 )
         {
-            if (ExtensionMethods.IsInBounds(x, y, _width, _height))
+            if (ExtensionMethods.IsInBounds(x, y, Width, Height))
             {
                 GamePiece randomPiece = Instantiate(gamePiece, Vector3.zero, Quaternion.identity);
                 CreateGamePiece(randomPiece, x, y, falseYOffset);
@@ -188,50 +192,50 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
         public void ClickTile(Tile tile)
         {
-            if(_clickedTile == null && _canGetInput)
-                _clickedTile = tile;
+            if(clickedTile == null && _canGetInput)
+                clickedTile = tile;
         }
 
         public void DragToTile(Tile tile)
         {
-            if (_clickedTile != null &&  IsNextTo(tile, _clickedTile) && _canGetInput) 
-                _targetTile = tile;
+            if (clickedTile != null &&  IsNextTo(tile, clickedTile) && _canGetInput) 
+                targetTile = tile;
         }
 
         public void ReleaseTile()
         {
-            if (_clickedTile != null && _targetTile != null  && _canGetInput )
+            if (clickedTile != null && targetTile != null  && _canGetInput )
             {
-                StartCoroutine(SwitchTiles(_clickedTile,_targetTile, () => _canGetInput = true));
+                StartCoroutine(SwitchTiles(clickedTile,targetTile, () => _canGetInput = true));
             }
             else
             {
-                _clickedTile = null;
-                _targetTile = null;
+                clickedTile = null;
+                targetTile = null;
             }
 
-            IEnumerator SwitchTiles(Tile current , Tile target, Action OnComplete)
+            IEnumerator SwitchTiles(Tile current , Tile target, Action onComplete)
             {
                 _canGetInput = false;
                 
-                GamePiece clickedPiece = _gamePieceArray[current._xIndex, current._yIndex];
-                GamePiece targetPiece = _gamePieceArray[target._xIndex, target._yIndex];
+                GamePiece clickedPiece = GamePieceArray[current._xIndex, current._yIndex];
+                GamePiece targetPiece = GamePieceArray[target._xIndex, target._yIndex];
 
 
                 if (targetPiece != null && clickedPiece != null)
                 {
-                    clickedPiece.MoveGamePiece(_targetTile._xIndex,_targetTile._yIndex,_swapTime); 
-                    targetPiece.MoveGamePiece(_clickedTile._xIndex,_clickedTile._yIndex,_swapTime);
+                    clickedPiece.MoveGamePiece(targetTile._xIndex,targetTile._yIndex,_swapTime); 
+                    targetPiece.MoveGamePiece(clickedTile._xIndex,clickedTile._yIndex,_swapTime);
                     
                     yield return _swapWaiter;
 
-                    List<GamePiece> clickedPieceMatches = CombineMatches(_clickedTile._xIndex, _clickedTile._yIndex);
-                    List<GamePiece> targetPieceMatches = CombineMatches(_targetTile._xIndex, _targetTile._yIndex);
+                    List<GamePiece> clickedPieceMatches = CombineMatches(clickedTile._xIndex, clickedTile._yIndex);
+                    List<GamePiece> targetPieceMatches = CombineMatches(targetTile._xIndex, targetTile._yIndex);
 
                     if (targetPieceMatches.Count == 0 && clickedPieceMatches.Count == 0)
                     {
-                        clickedPiece.MoveGamePiece(_clickedTile._xIndex,_clickedTile._yIndex,_swapTime);
-                        targetPiece.MoveGamePiece(_targetTile._xIndex,_targetTile._yIndex,_swapTime);
+                        clickedPiece.MoveGamePiece(clickedTile._xIndex,clickedTile._yIndex,_swapTime);
+                        targetPiece.MoveGamePiece(targetTile._xIndex,targetTile._yIndex,_swapTime);
                     }
                     else
                     {
@@ -241,11 +245,11 @@ namespace _Project.Scripts.Match3.Game.BoardActor
                         StartCoroutine(ClearAndRefillBoard(targetPieceMatches));
                     }
                     
-                    _clickedTile = null;
-                    _targetTile = null;
+                    clickedTile = null;
+                    targetTile = null;
                 }
 
-                OnComplete?.Invoke();
+                onComplete?.Invoke();
 
             }
             
@@ -343,9 +347,9 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
             GamePiece startPiece = null;
 
-            if (ExtensionMethods.IsInBounds(startX, startY,_width,_height))
+            if (ExtensionMethods.IsInBounds(startX, startY,Width,Height))
             {
-                startPiece = _gamePieceArray[startX, startY];
+                startPiece = GamePieceArray[startX, startY];
             }
 
             if (startPiece !=null)
@@ -361,19 +365,19 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             int nextX;
             int nextY;
 
-            int maxValue = (_width > _height) ? _width: _height;
+            int maxValue = (Width > Height) ? Width: Height;
 
             for (int i = 1; i < maxValue - 1; i++)
             {
                 nextX = startX + (int) Mathf.Clamp(searchDirection.x,-1,1) * i;
                 nextY = startY + (int) Mathf.Clamp(searchDirection.y,-1,1) * i;
 
-                if (!ExtensionMethods.IsInBounds(nextX, nextY,_width,_height))
+                if (!ExtensionMethods.IsInBounds(nextX, nextY,Width,Height))
                 {
                     break;
                 }
 
-                GamePiece nextPiece = _gamePieceArray[nextX, nextY];
+                GamePiece nextPiece = GamePieceArray[nextX, nextY];
 
                 if (nextPiece == null)
                 {
@@ -417,12 +421,12 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
         void ClearPieceAtPosition(int x, int y)
         {
-            GamePiece pieceToClear = _gamePieceArray[x, y];
+            GamePiece pieceToClear = GamePieceArray[x, y];
 
 
             if (pieceToClear != null)
             {
-                _gamePieceArray[x, y] = null;
+                GamePieceArray[x, y] = null;
                 Destroy(pieceToClear.gameObject);
             }
         }
@@ -501,24 +505,24 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         {
             List<GamePiece> movingPieces = new List<GamePiece>();
 
-            for (int i = 0; i < _height - 1; i++)
+            for (int i = 0; i < Height - 1; i++)
             {
-                if (_gamePieceArray[column, i] == null && _tileArray[column,i].tileType != TileType.Obstacle)
+                if (GamePieceArray[column, i] == null && _tileArray[column,i].tileType != TileType.Obstacle)
                 {
-                    for (int j = i + 1; j < _height; j++)
+                    for (int j = i + 1; j < Height; j++)
                     {
-                        if (_gamePieceArray[column, j] != null)
+                        if (GamePieceArray[column, j] != null)
                         {
-                            _gamePieceArray[column, j].MoveGamePiece(column, i, collapseTime * (j - i) );
-                            _gamePieceArray[column, i] = _gamePieceArray[column, j];
-                            _gamePieceArray[column, i].SetCoord(column, i);
+                            GamePieceArray[column, j].MoveGamePiece(column, i, collapseTime * (j - i) );
+                            GamePieceArray[column, i] = GamePieceArray[column, j];
+                            GamePieceArray[column, i].SetCoord(column, i);
 
-                            if (!movingPieces.Contains(_gamePieceArray[column, i]))
+                            if (!movingPieces.Contains(GamePieceArray[column, i]))
                             {
-                                movingPieces.Add(_gamePieceArray[column, i]);
+                                movingPieces.Add(GamePieceArray[column, i]);
                             }
 
-                            _gamePieceArray[column, j] = null;
+                            GamePieceArray[column, j] = null;
                             break;
 
                         }
@@ -627,9 +631,9 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
         private void OnDrawGizmos()
         {
-            for (int i = 0; i < _width; i++)
+            for (int i = 0; i < Width; i++)
             {
-                for (int j = 0; j < _height; j++)
+                for (int j = 0; j < Height; j++)
                 {
                     Handles.Label(new Vector3(i,j), "x" + i + "y" + j);
                 }

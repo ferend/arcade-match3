@@ -20,11 +20,11 @@ namespace _Project.Scripts.Match3.Game.Powerup
         {
             List<GamePiece> gamePieces = new List<GamePiece>();
 
-            for (int i = 0; i < _gameBoard._width; i++)
+            for (int i = 0; i < _gameBoard.Width; i++)
             {
-                if (_gameBoard._gamePieceArray[i, row] != null)
+                if (_gameBoard.GamePieceArray[i, row] != null)
                 {
-                    gamePieces.Add(_gameBoard._gamePieceArray[i,row]);
+                    gamePieces.Add(_gameBoard.GamePieceArray[i,row]);
                 }
             }
 
@@ -35,11 +35,11 @@ namespace _Project.Scripts.Match3.Game.Powerup
         {
             List<GamePiece> gamePieces = new List<GamePiece>();
 
-            for (int i = 0; i < _gameBoard._height; i++)
+            for (int i = 0; i < _gameBoard.Height; i++)
             {
-                if (_gameBoard._gamePieceArray[column, i] != null)
+                if (_gameBoard.GamePieceArray[column, i] != null)
                 {
-                    gamePieces.Add(_gameBoard._gamePieceArray[column, i]);
+                    gamePieces.Add(_gameBoard.GamePieceArray[column, i]);
                 }
             }
 
@@ -54,9 +54,9 @@ namespace _Project.Scripts.Match3.Game.Powerup
             {
                 for (int j = y - offset; j <= y + offset; j++)
                 {
-                    if (ExtensionMethods.IsInBounds(i, j, _gameBoard._width, _gameBoard._height))
+                    if (ExtensionMethods.IsInBounds(i, j, _gameBoard.Width, _gameBoard.Height))
                     {
-                        gamePieces.Add(_gameBoard._gamePieceArray[i,j]);
+                        gamePieces.Add(_gameBoard.GamePieceArray[i,j]);
                     }
                 }
             }
