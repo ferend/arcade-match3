@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using _Project.Scripts.Match3.Actor;
 using _Project.Scripts.Match3.Game.PieceActor;
+using _Project.Scripts.Match3.Game.Powerup;
 using _Project.Scripts.Match3.Game.TileActor;
 using _Project.Scripts.Match3.Utility;
 using UnityEditor;
@@ -15,8 +16,8 @@ namespace _Project.Scripts.Match3.Game.BoardActor
     public class Board : MonoBehaviour
     {
         
-        private int _width = Constants.BOARD_WIDTH;
-        private int _height = Constants.BOARD_HEIGHT;
+        internal int _width = Constants.BOARD_WIDTH;
+        internal int _height = Constants.BOARD_HEIGHT;
         private bool _canGetInput = true;
 
         private float _swapTime = Constants.TILE_SWAP_TIME;
@@ -29,7 +30,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         [SerializeField] private StartingTile[] startingGamePieces;
         
         private Tile[,] _tileArray;
-        private GamePiece[,] _gamePieceArray;
+        internal GamePiece[,] _gamePieceArray;
 
         public Tile _clickedTile;
         public Tile _targetTile;
@@ -568,6 +569,9 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             {
                 _canGetInput = false;
 
+                List<GamePiece> bombedPieces = GetBombedPieces(gamePieces);
+                gamePieces = gamePieces.Union(bombedPieces).ToList();
+                
                 ClearPieceAt(gamePieces);
                 BreakTileAt(gamePieces);
                 
@@ -590,7 +594,37 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             FillBoard(10);
             _canGetInput = true;
         }
+
+
         
+        private List<GamePiece> GetBombedPieces(List<GamePiece> gamePieces)
+        {
+            List<GamePiece> allPiecesToClear = new List<GamePiece>();
+
+            foreach (GamePiece piece in gamePieces)
+            {
+                if (piece != null)
+                {
+                    List<GamePiece> piecesToClear = new List<GamePiece>();
+                    Bomb bomb = piece.GetComponent<Bomb>();
+                    if (bomb != null)
+                    {
+                        piecesToClear = bomb.bombType switch
+                        {
+                            BombType.Column => bomb.GetColumnPieces(bomb.xIndex),
+                            BombType.Row => bomb.GetRowPieces(bomb.yIndex),
+                            BombType.Adjacent => bomb.GetAdjacentPieces(bomb.xIndex, bomb.yIndex, 1),
+                            _ => piecesToClear
+                        };
+                    }
+
+                    allPiecesToClear = allPiecesToClear.Union(piecesToClear).ToList();
+                }
+            }
+
+            return allPiecesToClear;
+        }
+
         private void OnDrawGizmos()
         {
             for (int i = 0; i < _width; i++)

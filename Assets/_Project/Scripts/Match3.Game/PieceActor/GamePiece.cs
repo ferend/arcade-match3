@@ -16,9 +16,9 @@ namespace _Project.Scripts.Match3.Game.PieceActor
         private SpriteRenderer _spriteRenderer;
         private Color[] _colors = Constants.TILE_COLORS;
 
-        private bool isMoving = false;
+        private bool _isMoving = false;
 
-        private Board _gameBoard;
+        internal Board _gameBoard;
 
         public Color gamePieceColor;
 
@@ -50,7 +50,7 @@ namespace _Project.Scripts.Match3.Game.PieceActor
 
         public void MoveGamePiece(int destX, int destY, float timeToMove)
         {
-            if(isMoving) return;
+            if(_isMoving) return;
             StartCoroutine(MoveRoutine(new Vector3(destX, destY, 0), timeToMove));
         }
 
@@ -58,7 +58,7 @@ namespace _Project.Scripts.Match3.Game.PieceActor
         {
             Vector3 startPos = transform.position;
             float elapsedTime = 0f;
-            isMoving = true;
+            _isMoving = true;
 
             while (true)
             {
@@ -81,7 +81,7 @@ namespace _Project.Scripts.Match3.Game.PieceActor
                 
             }
 
-            isMoving = false;
+            _isMoving = false;
         }
         
     }
