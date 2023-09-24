@@ -9,35 +9,44 @@ using _Project.Scripts.Match3.Game.TileActor;
 using _Project.Scripts.Match3.Utility;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace _Project.Scripts.Match3.Game.BoardActor
 {
     
     public class Board : MonoBehaviour
     {
+        [Header("Rules")]
+        [SerializeField] private bool dropBombAfterMatch = false;
+        [SerializeField] private int matchCountForBombDrop = 4;
         
         internal readonly int Width = Constants.BOARD_WIDTH;
         internal readonly int Height = Constants.BOARD_HEIGHT;
         private bool _canGetInput = true;
-
+        
         private readonly float _swapTime = Constants.TILE_SWAP_TIME;
         private WaitForSeconds _swapWaiter;
         private WaitForSeconds _collapseWaiter;
         
-        [SerializeField] private GameObject tileNormalPrefab; 
-        [SerializeField] private GamePiece gamePiece;
-        [SerializeField] private StartingTile[] startingTiles;
-        [SerializeField] private StartingTile[] startingGamePieces;
+        [Space(10)]
+        [Header("Prefabs")]
         [SerializeField] private GameObject columnBombPrefab;
         [SerializeField] private GameObject rowBombPrefab;
         [SerializeField] private GameObject adjacentBombPrefab;
+        [SerializeField] private GameObject tileNormalPrefab; 
+        [SerializeField] private GamePiece gamePiece;
+        
+        [Space(10)]
+        [Header("Pre-Defined Pieces")]
+        [SerializeField] private StartingTile[] startingTiles;
+        [SerializeField] private StartingTile[] startingGamePieces;
         
         private Tile[,] _tileArray;
         internal GamePiece[,] GamePieceArray;
 
-        public Tile clickedTile;
-        public Tile targetTile;
+        private Tile _clickedTile;
+        private Tile _targetTile;
+        private Bomb _clickedTileBomb;
+        private Bomb _targetTileBomb;
         
         public event Action<int, int, int> ClearPiecePFXEvent;
         public event Action<int ,int, int, int> BreakTilePFXEvent;
@@ -125,6 +134,20 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             }
         }
 
+        private Bomb CreateBomb(GameObject prefab, int x, int y, int z = 0)
+        {
+            if (prefab != null && ExtensionMethods.IsInBounds(x, y, Width, Height))
+            {
+                Bomb bomb = Instantiate(prefab.GetComponent<Bomb>(), new Vector3(x, y, 0), Quaternion.identity);
+                bomb.SetBoard(this);
+                bomb.SetCoord(x,y);
+                bomb.transform.parent = this.transform;
+                return bomb;
+            }
+
+            return null;
+        }
+
         public void PlaceGamePiece(GamePiece gamePiece, int x , int y )
         {
             if(gamePiece == null) return;
@@ -192,61 +215,67 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
         public void ClickTile(Tile tile)
         {
-            if(clickedTile == null && _canGetInput)
-                clickedTile = tile;
+            if(_clickedTile == null && _canGetInput)
+                _clickedTile = tile;
         }
 
         public void DragToTile(Tile tile)
         {
-            if (clickedTile != null &&  IsNextTo(tile, clickedTile) && _canGetInput) 
-                targetTile = tile;
+            if (_clickedTile != null &&  IsNextTo(tile, _clickedTile) && _canGetInput) 
+                _targetTile = tile;
         }
 
         public void ReleaseTile()
         {
-            if (clickedTile != null && targetTile != null  && _canGetInput )
+            if (_clickedTile != null && _targetTile != null  && _canGetInput )
             {
-                StartCoroutine(SwitchTiles(clickedTile,targetTile, () => _canGetInput = true));
+                StartCoroutine(SwitchTiles(_clickedTile,_targetTile, () => _canGetInput = true));
             }
             else
             {
-                clickedTile = null;
-                targetTile = null;
+                _clickedTile = null;
+                _targetTile = null;
             }
 
             IEnumerator SwitchTiles(Tile current , Tile target, Action onComplete)
             {
                 _canGetInput = false;
                 
-                GamePiece clickedPiece = GamePieceArray[current._xIndex, current._yIndex];
-                GamePiece targetPiece = GamePieceArray[target._xIndex, target._yIndex];
+                GamePiece clickedPiece = GamePieceArray[current.XIndex, current.YIndex];
+                GamePiece targetPiece = GamePieceArray[target.XIndex, target.YIndex];
 
 
                 if (targetPiece != null && clickedPiece != null)
                 {
-                    clickedPiece.MoveGamePiece(targetTile._xIndex,targetTile._yIndex,_swapTime); 
-                    targetPiece.MoveGamePiece(clickedTile._xIndex,clickedTile._yIndex,_swapTime);
+                    clickedPiece.MoveGamePiece(_targetTile.XIndex,_targetTile.YIndex,_swapTime); 
+                    targetPiece.MoveGamePiece(_clickedTile.XIndex,_clickedTile.YIndex,_swapTime);
                     
                     yield return _swapWaiter;
 
-                    List<GamePiece> clickedPieceMatches = CombineMatches(clickedTile._xIndex, clickedTile._yIndex);
-                    List<GamePiece> targetPieceMatches = CombineMatches(targetTile._xIndex, targetTile._yIndex);
+                    List<GamePiece> clickedPieceMatches = CombineMatches(_clickedTile.XIndex, _clickedTile.YIndex);
+                    List<GamePiece> targetPieceMatches = CombineMatches(_targetTile.XIndex, _targetTile.YIndex);
 
                     if (targetPieceMatches.Count == 0 && clickedPieceMatches.Count == 0)
                     {
-                        clickedPiece.MoveGamePiece(clickedTile._xIndex,clickedTile._yIndex,_swapTime);
-                        targetPiece.MoveGamePiece(targetTile._xIndex,targetTile._yIndex,_swapTime);
+                        clickedPiece.MoveGamePiece(_clickedTile.XIndex,_clickedTile.YIndex,_swapTime);
+                        targetPiece.MoveGamePiece(_targetTile.XIndex,_targetTile.YIndex,_swapTime);
                     }
                     else
                     {
                         yield return _swapWaiter;
 
+                        if (dropBombAfterMatch)
+                        {
+                            PerformDropBomb(clickedPieceMatches, targetPieceMatches);
+                        }
+
                         StartCoroutine(ClearAndRefillBoard(clickedPieceMatches));
                         StartCoroutine(ClearAndRefillBoard(targetPieceMatches));
+                        
                     }
                     
-                    clickedTile = null;
-                    targetTile = null;
+                    _clickedTile = null;
+                    _targetTile = null;
                 }
 
                 onComplete?.Invoke();
@@ -255,14 +284,22 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             
         }
 
+        private void PerformDropBomb(List<GamePiece> clickedPieceMatches, List<GamePiece> targetPieceMatches)
+        {
+            Vector2 swipeDirection =
+                new Vector2(_targetTile.XIndex - _clickedTile.XIndex, _targetTile.YIndex - _clickedTile.YIndex);
+            _clickedTileBomb = DropBomb(_clickedTile.XIndex, _clickedTile.YIndex, swipeDirection, clickedPieceMatches);
+            _targetTileBomb = DropBomb(_targetTile.XIndex, _targetTile.YIndex, swipeDirection, targetPieceMatches);
+        }
+
         bool IsNextTo(Tile start , Tile end)
         {
-            if (Mathf.Abs(start._xIndex - end._xIndex) == 1 && start._yIndex == end._yIndex)
+            if (Mathf.Abs(start.XIndex - end.XIndex) == 1 && start.YIndex == end.YIndex)
             {
                 return true;
             }
 
-            return Mathf.Abs(start._yIndex - end._yIndex) == 1 && start._xIndex == end._xIndex;
+            return Mathf.Abs(start.YIndex - end.YIndex) == 1 && start.XIndex == end.XIndex;
         }
 
         
@@ -580,6 +617,9 @@ namespace _Project.Scripts.Match3.Game.BoardActor
                 BreakTileAt(gamePieces);
                 
                 yield return _collapseWaiter;
+                
+                ActivateDroppedBomb();
+
                 List<GamePiece> movingPieces = CollapseColumnByPieces(gamePieces);
 
                 yield return _collapseWaiter;
@@ -598,8 +638,6 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             FillBoard(10);
             _canGetInput = true;
         }
-
-
         
         private List<GamePiece> GetBombedPieces(List<GamePiece> gamePieces)
         {
@@ -629,6 +667,100 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             return allPiecesToClear;
         }
 
+        private bool IsCornerMatch(List<GamePiece> gamePieces)
+        {
+            bool vertical = false;
+            bool horizontal = false;
+            int xStart = -1;
+            int yStart = -1;
+
+            foreach (GamePiece piece in gamePieces)
+            {
+                if (piece == null) continue;
+                if (xStart == -1 || yStart == -1)
+                {
+                    xStart = piece.xIndex;
+                    yStart = piece.yIndex;
+                    continue;
+                }
+
+                if (piece.xIndex != xStart && piece.yIndex == yStart)
+                {
+                    horizontal = true;
+                }
+
+                if (piece.xIndex == xStart && piece.yIndex != yStart)
+                {
+                    vertical = true;
+                }
+            }
+
+            return (horizontal && vertical);
+
+        }
+
+        Bomb DropBomb(int x, int y, Vector2 swapDirection, List<GamePiece> gamePieces)
+        {
+            Bomb bomb = null;
+
+            if (gamePieces.Count >= matchCountForBombDrop)
+            {
+                if (IsCornerMatch(gamePieces))
+                {
+                    if (adjacentBombPrefab != null)
+                    {
+                        bomb = CreateBomb(adjacentBombPrefab, x, y);
+                    }
+                }
+                else
+                {
+                    if (swapDirection.x != 0)
+                    {
+                        if (rowBombPrefab != null)
+                        {
+                            bomb = CreateBomb(rowBombPrefab, x, y);
+                        }
+                    }
+                    else
+                    {
+                        if (columnBombPrefab != null)
+                        {
+                            bomb = CreateBomb(columnBombPrefab, x, y);
+                        }
+                    }
+                }
+            }
+
+            return bomb;
+        }
+        
+        private void ActivateDroppedBomb()
+        {
+            if (_clickedTileBomb != null)
+            {
+                int x = (int)_clickedTileBomb.transform.position.x;
+                int y = (int)_clickedTileBomb.transform.position.y;
+
+                if (ExtensionMethods.IsInBounds(x, y, Width, Height))
+                {
+                    GamePieceArray[x, y] = _clickedTileBomb.GetComponent<GamePiece>();
+                }
+                _clickedTileBomb = null;
+            }
+
+            if (_targetTileBomb != null)
+            {
+                int x = (int)_targetTileBomb.transform.position.x;
+                int y = (int)_targetTileBomb.transform.position.y;
+
+                if (ExtensionMethods.IsInBounds(x, y, Width, Height))
+                {
+                    GamePieceArray[x, y] = _targetTileBomb.GetComponent<GamePiece>();
+                }
+                _targetTileBomb = null;
+            }
+        }
+        
         private void OnDrawGizmos()
         {
             for (int i = 0; i < Width; i++)

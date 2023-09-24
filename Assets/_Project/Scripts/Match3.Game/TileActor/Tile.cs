@@ -12,8 +12,8 @@ namespace _Project.Scripts.Match3.Game.TileActor
     {
         [FormerlySerializedAs("TileType")] [SerializeField] internal TileType tileType = TileType.Normal;
 
-        public int _xIndex;
-        public int _yIndex;
+        internal int XIndex;
+        internal int YIndex;
         
         private Board _gameBoard;
 
@@ -25,8 +25,8 @@ namespace _Project.Scripts.Match3.Game.TileActor
 
         public void InitTile(int x , int y ,Board board)
         {
-            _xIndex = x;
-            _yIndex = y;
+            XIndex = x;
+            YIndex = y;
             _gameBoard = board;
             
             if (tileType == TileType.Breakable )
