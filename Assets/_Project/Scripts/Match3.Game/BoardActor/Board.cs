@@ -48,8 +48,9 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         private Bomb _clickedTileBomb;
         private Bomb _targetTileBomb;
         
-        public event Action<int, int, int> ClearPiecePFXEvent;
-        public event Action<int ,int, int, int> BreakTilePFXEvent;
+        public event Action<int, int, int> ClearPiecePfxEvent;
+        public event Action<int, int, int> BombPiecePfxEvent;
+        public event Action<int ,int, int, int> BreakTilePfxEvent;
 
 
         private void Awake()
@@ -468,15 +469,20 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             }
         }
         
-        void ClearPieceAt(List<GamePiece> gamePieces)
+        void ClearPieceAt(List<GamePiece> gamePieces, List<GamePiece> bombedPieces)
         {
             foreach (GamePiece piece in gamePieces)
             {
                 ClearPieceAtPosition(piece.xIndex, piece.yIndex);
-                ClearPiecePFXEvent?.Invoke(piece.xIndex,piece.yIndex,0);
-
+                if (bombedPieces.Contains(piece))
+                {
+                    BombPiecePfxEvent?.Invoke(piece.xIndex,piece.yIndex,0);
+                }
+                else
+                {
+                    ClearPiecePfxEvent?.Invoke(piece.xIndex,piece.yIndex,0);    
+                }
             }
-
         }
 
 
@@ -485,7 +491,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             Tile tileToBreak = _tileArray[x, y];
             if (tileToBreak != null && tileToBreak.tileType == TileType.Breakable)
             {
-                BreakTilePFXEvent?.Invoke(tileToBreak.breakableValue, x, y, 0);
+                BreakTilePfxEvent?.Invoke(tileToBreak.breakableValue, x, y, 0);
                 tileToBreak.BreakTile();
             }
         }
@@ -612,8 +618,12 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
                 List<GamePiece> bombedPieces = GetBombedPieces(gamePieces);
                 gamePieces = gamePieces.Union(bombedPieces).ToList();
-                
-                ClearPieceAt(gamePieces);
+
+                // Chaining bombs 
+                //bombedPieces = GetBombedPieces(gamePieces);
+                //gamePieces = gamePieces.Union(bombedPieces).ToList();
+
+                ClearPieceAt(gamePieces, bombedPieces);
                 BreakTileAt(gamePieces);
                 
                 yield return _collapseWaiter;

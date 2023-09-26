@@ -1,16 +1,17 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace _Project.Scripts.Match3.Game.Effects
 {
     public class ParticlePlayer : MonoBehaviour
     {
         [SerializeField] private ParticleSystem[] allParticles;
-        private float lifetime = 1f;
+        private readonly float _lifetime = 1f;
 
         private void Start()
         {
             allParticles = GetComponentsInChildren<ParticleSystem>();
-            Destroy(gameObject , lifetime);
+            Destroy(gameObject , _lifetime);
         }
 
         public void PlayParticle()

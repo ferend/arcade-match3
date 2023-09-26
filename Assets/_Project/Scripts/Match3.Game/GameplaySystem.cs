@@ -24,8 +24,9 @@ namespace _Project.Scripts.Match3.Game
 
         private void SetupEvents()
         {
-            board.ClearPiecePFXEvent += _particleManager.ClearPiecePFXAt;
-            board.BreakTilePFXEvent += _particleManager.BreakTilePFXAt;
+            board.ClearPiecePfxEvent += _particleManager.ClearPiecePfxAt;
+            board.BreakTilePfxEvent += _particleManager.BreakTilePfxAt;
+            board.BombPiecePfxEvent += _particleManager.BombPfxAt;
         }
         
         
