@@ -18,6 +18,8 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         [Header("Rules")]
         [SerializeField] private bool dropBombAfterMatch = false;
         [SerializeField] private int matchCountForBombDrop = 4;
+        [SerializeField] private int matchCountForColorBombDrop = 5;
+
         
         internal readonly int Width = Constants.BOARD_WIDTH;
         internal readonly int Height = Constants.BOARD_HEIGHT;
@@ -30,6 +32,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         [Space(10)]
         [Header("Prefabs")]
         [SerializeField] private GameObject columnBombPrefab;
+        [SerializeField] private GameObject colorBombPrefab;
         [SerializeField] private GameObject rowBombPrefab;
         [SerializeField] private GameObject adjacentBombPrefab;
         [SerializeField] private GameObject tileNormalPrefab; 
@@ -255,8 +258,10 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
                     List<GamePiece> clickedPieceMatches = CombineMatches(_clickedTile.XIndex, _clickedTile.YIndex);
                     List<GamePiece> targetPieceMatches = CombineMatches(_targetTile.XIndex, _targetTile.YIndex);
+                    
+                    var colorMatches = GetSameColorPieces(clickedPiece, targetPiece);
 
-                    if (targetPieceMatches.Count == 0 && clickedPieceMatches.Count == 0)
+                    if (targetPieceMatches.Count == 0 && clickedPieceMatches.Count == 0 && colorMatches.Count == 0)
                     {
                         clickedPiece.MoveGamePiece(_clickedTile.XIndex,_clickedTile.YIndex,_swapTime);
                         targetPiece.MoveGamePiece(_targetTile.XIndex,_targetTile.YIndex,_swapTime);
@@ -270,9 +275,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
                             PerformDropBomb(clickedPieceMatches, targetPieceMatches);
                         }
 
-                        StartCoroutine(ClearAndRefillBoard(clickedPieceMatches));
-                        StartCoroutine(ClearAndRefillBoard(targetPieceMatches));
-                        
+                        StartCoroutine(ClearAndRefillBoard(clickedPieceMatches.Union(targetPieceMatches).ToList().Union(colorMatches).ToList()));
                     }
                     
                     _clickedTile = null;
@@ -284,7 +287,36 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             }
             
         }
+        
+        public List<GamePiece> GetSameColorPieces(GamePiece clickedPiece, GamePiece targetPiece)
+        {
+            List<GamePiece> colorMatches = new List<GamePiece>();
 
+            if (IsColorBomb(clickedPiece) && !IsColorBomb(targetPiece))
+            {
+                clickedPiece.gamePieceColor = targetPiece.gamePieceColor;
+                colorMatches = FindAllMatchValues(clickedPiece.gamePieceColor);
+            }
+            else if (!IsColorBomb(clickedPiece) && IsColorBomb(targetPiece))
+            {
+                targetPiece.gamePieceColor = clickedPiece.gamePieceColor;
+                colorMatches = FindAllMatchValues(targetPiece.gamePieceColor);
+            }
+            else if (IsColorBomb(clickedPiece) && IsColorBomb(targetPiece))
+            {
+                foreach (GamePiece piece in GamePieceArray)
+                {
+                    if (!colorMatches.Contains(piece))
+                    {
+                        colorMatches.Add(piece);
+                    }
+                }
+            }
+
+            return colorMatches;
+        }
+
+        
         private void PerformDropBomb(List<GamePiece> clickedPieceMatches, List<GamePiece> targetPieceMatches)
         {
             Vector2 swipeDirection =
@@ -620,8 +652,8 @@ namespace _Project.Scripts.Match3.Game.BoardActor
                 gamePieces = gamePieces.Union(bombedPieces).ToList();
 
                 // Chaining bombs 
-                //bombedPieces = GetBombedPieces(gamePieces);
-                //gamePieces = gamePieces.Union(bombedPieces).ToList();
+                bombedPieces = GetBombedPieces(gamePieces);
+                gamePieces = gamePieces.Union(bombedPieces).ToList();
 
                 ClearPieceAt(gamePieces, bombedPieces);
                 BreakTileAt(gamePieces);
@@ -709,6 +741,33 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
         }
 
+        private List<GamePiece> FindAllMatchValues(Color matchValue)
+        {
+            List<GamePiece> foundPieces = new List<GamePiece>();
+
+            for (int i = 0; i < Width; i++)
+            {
+                for (int j = 0; j < Height; j++)
+                {
+                    if (GamePieceArray[i,j] !=null)
+                    {
+                        if (GamePieceArray[i,j].gamePieceColor == matchValue)
+                        {
+                            foundPieces.Add(GamePieceArray[i,j]);
+                        }
+                    }
+                }
+            }
+            return foundPieces;
+        }
+
+        private bool IsColorBomb(GamePiece gamePiece)
+        {
+            Bomb bomb = gamePiece.GetComponent<Bomb>();
+            
+            return bomb != null && bomb.bombType == BombType.Color;
+        }
+
         Bomb DropBomb(int x, int y, Vector2 swapDirection, List<GamePiece> gamePieces)
         {
             Bomb bomb = null;
@@ -724,20 +783,28 @@ namespace _Project.Scripts.Match3.Game.BoardActor
                 }
                 else
                 {
-                    if (swapDirection.x != 0)
+                    if (gamePieces.Count >= matchCountForColorBombDrop)
                     {
-                        if (rowBombPrefab != null)
-                        {
-                            bomb = CreateBomb(rowBombPrefab, x, y);
-                        }
+                        bomb = CreateBomb(colorBombPrefab, x, y);
                     }
                     else
                     {
-                        if (columnBombPrefab != null)
+                        if (swapDirection.x != 0)
                         {
-                            bomb = CreateBomb(columnBombPrefab, x, y);
+                            if (rowBombPrefab != null)
+                            {
+                                bomb = CreateBomb(rowBombPrefab, x, y);
+                            }
+                        }
+                        else
+                        {
+                            if (columnBombPrefab != null)
+                            {
+                                bomb = CreateBomb(columnBombPrefab, x, y);
+                            }
                         }
                     }
+   
                 }
             }
 
@@ -770,6 +837,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
                 _targetTileBomb = null;
             }
         }
+        
         
         private void OnDrawGizmos()
         {

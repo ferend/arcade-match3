@@ -14623,7 +14623,7 @@ GameObject:
   - component: {fileID: 6485293999631519336}
   - component: {fileID: 6947979998615624200}
   m_Layer: 0
-  m_Name: BombPFX
+  m_Name: BombFX
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

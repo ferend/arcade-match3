@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using _Project.Scripts.Match3.Game.PieceActor;
 using _Project.Scripts.Match3.Utility;
+using UnityEngine;
 
 namespace _Project.Scripts.Match3.Game.Powerup
 {
@@ -16,15 +17,28 @@ namespace _Project.Scripts.Match3.Game.Powerup
     {
         public BombType bombType;
 
+        private void Start()
+        {
+          SetDefaultSpriteColor();
+        }
+
+        private void SetDefaultSpriteColor()
+        {
+            if (bombType == BombType.Color)
+            {
+                this.SpriteRenderer.color = Color.white;
+            }
+        }
+
         public List<GamePiece> GetRowPieces(int row)
         {
             List<GamePiece> gamePieces = new List<GamePiece>();
 
-            for (int i = 0; i < _gameBoard.Width; i++)
+            for (int i = 0; i < GameBoard.Width; i++)
             {
-                if (_gameBoard.GamePieceArray[i, row] != null)
+                if (GameBoard.GamePieceArray[i, row] != null)
                 {
-                    gamePieces.Add(_gameBoard.GamePieceArray[i,row]);
+                    gamePieces.Add(GameBoard.GamePieceArray[i,row]);
                 }
             }
 
@@ -35,11 +49,11 @@ namespace _Project.Scripts.Match3.Game.Powerup
         {
             List<GamePiece> gamePieces = new List<GamePiece>();
 
-            for (int i = 0; i < _gameBoard.Height; i++)
+            for (int i = 0; i < GameBoard.Height; i++)
             {
-                if (_gameBoard.GamePieceArray[column, i] != null)
+                if (GameBoard.GamePieceArray[column, i] != null)
                 {
-                    gamePieces.Add(_gameBoard.GamePieceArray[column, i]);
+                    gamePieces.Add(GameBoard.GamePieceArray[column, i]);
                 }
             }
 
@@ -54,14 +68,17 @@ namespace _Project.Scripts.Match3.Game.Powerup
             {
                 for (int j = y - offset; j <= y + offset; j++)
                 {
-                    if (ExtensionMethods.IsInBounds(i, j, _gameBoard.Width, _gameBoard.Height))
+                    if (ExtensionMethods.IsInBounds(i, j, GameBoard.Width, GameBoard.Height))
                     {
-                        gamePieces.Add(_gameBoard.GamePieceArray[i,j]);
+                        gamePieces.Add(GameBoard.GamePieceArray[i,j]);
                     }
                 }
             }
 
             return gamePieces;
         }
+        
+
+
     }
 }

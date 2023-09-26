@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using _Project.Scripts.Match3.Game.BoardActor;
+using _Project.Scripts.Match3.Game.Powerup;
 using _Project.Scripts.Match3.Utility;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -13,32 +14,32 @@ namespace _Project.Scripts.Match3.Game.PieceActor
         internal int xIndex;
         internal int yIndex;
         
-        private SpriteRenderer _spriteRenderer;
+        internal SpriteRenderer SpriteRenderer;
         private Color[] _colors = Constants.TILE_COLORS;
 
         private bool _isMoving = false;
 
-        internal Board _gameBoard;
+        internal Board GameBoard;
 
         public Color gamePieceColor;
 
         private void Awake()
         {
-            _spriteRenderer = this.GetComponent<SpriteRenderer>();
+            SpriteRenderer = this.GetComponent<SpriteRenderer>();
             SetSpriteColor();
         }
 
         public void SetBoard(Board board)
         {
-            _gameBoard = board;
+            GameBoard = board;
         }
         
         private void SetSpriteColor()
         {
-            
+            Bomb bomb = this.GetComponent<Bomb>();
             int randomIndex = Random.Range(0, _colors.Length);
             Color randomColor = _colors[randomIndex];
-            _spriteRenderer.color = randomColor;
+            SpriteRenderer.color = randomColor;
             gamePieceColor = randomColor;
         }
 
@@ -64,9 +65,9 @@ namespace _Project.Scripts.Match3.Game.PieceActor
             {
                 if (Vector3.Distance(transform.position, destination) < 0.01f)
                 {
-                    if (_gameBoard != null)
+                    if (GameBoard != null)
                     {
-                        _gameBoard.PlaceGamePiece(this, (int) destination.x, (int) destination.y);
+                        GameBoard.PlaceGamePiece(this, (int) destination.x, (int) destination.y);
                     }
                     break;
                 }
