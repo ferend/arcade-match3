@@ -19,7 +19,10 @@ namespace _Project.Scripts.Match3.Game.Powerup
         
         private void Start()
         {
-            SetDefaultSpriteColor();
+            if (bombType == BombType.Color)
+            {
+                SetDefaultSpriteColor();
+            }
         }
 
         public List<GamePiece> GetRowPieces(int row)

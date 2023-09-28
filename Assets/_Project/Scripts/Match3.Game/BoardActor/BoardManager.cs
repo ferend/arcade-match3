@@ -9,12 +9,14 @@ using _Project.Scripts.Match3.Game.Powerup;
 using _Project.Scripts.Match3.Game.TileActor;
 using _Project.Scripts.Match3.Utility;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace _Project.Scripts.Match3.Game.BoardActor
 {
     public class BoardManager : Manager
     {
         [SerializeField] private Board board;
+        [SerializeField] private GamePiece gamePiece;
 
         private bool _canGetInput = true;
         
@@ -34,7 +36,6 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         [SerializeField] private GameObject adjacentBombPrefab;
         [SerializeField] private GameObject tileNormalPrefab; 
         [SerializeField] private GameObject[] collectiblePrefabs; 
-        [SerializeField] private GamePiece gamePiece;
 
         private Bomb _clickedTileBomb;
         private Bomb _targetTileBomb;
@@ -53,6 +54,8 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
             List<GamePiece> startingCollectibles = FindAllCollectibles();
             board.collectibleCount = startingCollectibles.Count;
+
+            board.removeCollectibleDelegate = RemoveCollectibles;
 
         }
         
@@ -116,30 +119,40 @@ namespace _Project.Scripts.Match3.Game.BoardActor
                 {
                     if (board.gamePieceArray[i, j] == null && board.tileArray[i,j].tileType != TileType.Obstacle)
                     {
-                        FillRandomAt(i, j,falseYOffset);
-                        iterations = 0;
 
-                        while (HasMatchOnFill(i, j))
+                        if (j == board.height - 1 && CanAddCollectible())
                         {
-                            ClearPieceAtPosition(i, j);
-                            FillRandomAt(i, j, falseYOffset);
-                            iterations++;
+                            FillRandomCollectibleAt(i,j, falseYOffset);
+                            board.collectibleCount++;
+                        }
+                        else
+                        {
+                            FillRandomGamePieceAt(i, j,falseYOffset);
+                            iterations = 0;
 
-                            if (iterations >= maxIterations)
+                            while (HasMatchOnFill(i, j))
                             {
-                                break;
+                                ClearPieceAtPosition(i, j);
+                                FillRandomGamePieceAt(i, j, falseYOffset);
+                                iterations++;
+
+                                if (iterations >= maxIterations)
+                                {
+                                    break;
+                                }
                             }
                         }
+                        
+           
                     }
                 }
             }
         }
         
-        void ClearPieceAtPosition(int x, int y)
+        private void ClearPieceAtPosition(int x, int y)
         {
             GamePiece pieceToClear = board.gamePieceArray[x, y];
-
-
+            
             if (pieceToClear != null)
             {
                 board.gamePieceArray[x, y] = null;
@@ -147,7 +160,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             }
         }
         
-        void ClearPieceAt(List<GamePiece> gamePieces, List<GamePiece> bombedPieces)
+        private void ClearPieceAt(List<GamePiece> gamePieces, List<GamePiece> bombedPieces)
         {
             foreach (GamePiece piece in gamePieces)
             {
@@ -163,7 +176,27 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             }
         }
 
-        private void FillRandomAt(int x, int y, int falseYOffset = 0 )
+        private GamePiece GetRandomCollectible() => GetRandomObject(collectiblePrefabs);
+
+        private GamePiece GetRandomObject(GameObject[] objectArray)
+        {
+            int randomIndex = Random.Range(0, objectArray.Length);
+
+            if (objectArray[randomIndex] == null) Debug.Log("No valid game object at index");
+
+            return objectArray[randomIndex].GetComponent<GamePiece>();
+        }
+        
+        private void FillRandomCollectibleAt(int x, int y, int falseYOffset = 0 )
+        {
+            if (ExtensionMethods.IsInBounds(x, y, board.width, board.height))
+            {
+                GamePiece randomPiece = Instantiate(GetRandomCollectible(), Vector3.zero, Quaternion.identity);
+                CreateGamePiece(randomPiece, x, y, falseYOffset);
+            }
+        }
+
+        private void FillRandomGamePieceAt(int x, int y, int falseYOffset = 0 )
         {
             if (ExtensionMethods.IsInBounds(x, y, board.width, board.height))
             {
@@ -338,6 +371,11 @@ namespace _Project.Scripts.Match3.Game.BoardActor
                 bombedPieces = board.GetBombedPieces(gamePieces);
                 gamePieces = gamePieces.Union(bombedPieces).ToList();
 
+                List<GamePiece> collectedPieces = FindCollectiblesAt(0);
+                board.collectibleCount -= collectedPieces.Count;
+
+                gamePieces = gamePieces.Union(collectedPieces).ToList();
+
                 ClearPieceAt(gamePieces, bombedPieces);
                 BreakTileAt(gamePieces);
                 
@@ -350,6 +388,10 @@ namespace _Project.Scripts.Match3.Game.BoardActor
                 yield return _collapseWaiter;
                 List<GamePiece> matches = CombineMatches(movingPieces);
                 
+                // Check bottom row for collectibles. Fix waiting issue
+                collectedPieces = FindCollectiblesAt(0);
+                matches = matches.Union(collectedPieces).ToList();
+
                 if (matches.Count == 0)
                 {
                     break;
@@ -458,6 +500,28 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             return bomb;
         }
         
+        private List<GamePiece> RemoveCollectibles(List<GamePiece> bombedPieces)
+        {
+            List<GamePiece> collectiblePieces = FindAllCollectibles();
+            List<GamePiece> piecesToRemove = new List<GamePiece>();
+
+            foreach (GamePiece piece in collectiblePieces)
+            {
+                Collectible collectible = piece.GetComponent<Collectible>();
+
+                if (collectible != null)
+                {
+                    if (!collectible.clearedByBomb)
+                    {
+                        piecesToRemove.Add(piece);
+                    }
+                }
+            }
+
+            return bombedPieces.Except(piecesToRemove).ToList();
+
+        }
+        
         private List<GamePiece> FindAllCollectibles()
         {
             List<GamePiece> foundCollectibles = new List<GamePiece>();
@@ -470,7 +534,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
             return foundCollectibles;
         }
-
+        
 
         private List<GamePiece> FindCollectiblesAt(int row)
         {
@@ -491,7 +555,13 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
             return foundCollectibles;
         }
-        
+
+        bool CanAddCollectible()
+        {
+            return (Random.Range(0f, 1f) <= board.chanceForCollectible && collectiblePrefabs.Length > 0 &&
+                    board.collectibleCount < board.maxCollectibleCount);
+        }
+
 
     }
 }

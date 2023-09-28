@@ -99,14 +99,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tileType: 2
-  _xIndex: 0
-  _yIndex: 0
   breakableValue: 2
   breakableSprites:
   - {fileID: 21300000, guid: bc1db04a5b2af9a47bc194f7596300f1, type: 3}
   - {fileID: 21300000, guid: beab9a0ab4ca08a42b80ade608fefdd1, type: 3}
   - {fileID: 21300000, guid: 97418f6b05adbc9449e1d4714741a618, type: 3}
-  normalColor: {r: 0, g: 0, b: 0, a: 1}
+  normalColor: {r: 1, g: 1, b: 1, a: 0}
 --- !u!61 &8354876510432350069
 BoxCollider2D:
   m_ObjectHideFlags: 0

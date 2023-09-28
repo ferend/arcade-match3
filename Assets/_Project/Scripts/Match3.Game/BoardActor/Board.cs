@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using _Project.Scripts.Match3.Actor;
@@ -35,6 +36,10 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
         internal Tile clickedTile;
         internal Tile targetTile;
+
+        internal delegate List<GamePiece> RemoveCollectibleDelegate(List<GamePiece> bombedPieces);
+
+        internal RemoveCollectibleDelegate removeCollectibleDelegate;
 
         public void PlaceGamePiece(GamePiece gamePiece, int x , int y )
         {
@@ -294,11 +299,13 @@ namespace _Project.Scripts.Match3.Game.BoardActor
                     }
 
                     allPiecesToClear = allPiecesToClear.Union(piecesToClear).ToList();
+                    allPiecesToClear = removeCollectibleDelegate(allPiecesToClear);
                 }
             }
 
             return allPiecesToClear;
         }
+        
 
         public bool IsCornerMatch(List<GamePiece> gamePieces)
         {

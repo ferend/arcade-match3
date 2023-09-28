@@ -34,7 +34,7 @@ namespace _Project.Scripts.Match3.Game.PieceActor
             gameBoard = board;
         }
 
-        public void SetDefaultSpriteColor()
+        protected void SetDefaultSpriteColor()
         {
             this.spriteRenderer.color = Color.white;
         }
