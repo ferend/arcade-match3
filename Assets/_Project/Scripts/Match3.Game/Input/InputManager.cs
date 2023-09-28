@@ -1,17 +1,19 @@
-﻿using _Project.Scripts.Match3.Game.TileActor;
+﻿using System;
+using _Project.Scripts.Match3.Game.TileActor;
 using UnityEngine;
 
-namespace _Project.Scripts.Match3.Input
+namespace _Project.Scripts.Match3.Game.Input
 {
-    /// <summary>
-    /// Needs improvement.
-    /// </summary>
-    public class InputSystem : global::Game.System
+    public class InputManager : Manager
     {
         private Tile _currentTile;
         [SerializeField] private Camera gameCamera;
         private int _layerMask;
 
+        public event Action<Tile> DragTileEvent;
+        public event Action<Tile> ClickTileEvent;
+        public event Action ReleaseTileEvent;
+        
         public override void Setup()
         {
             _layerMask = LayerMask.GetMask("Board");
@@ -28,7 +30,7 @@ namespace _Project.Scripts.Match3.Input
                 
                 if (_currentTile != null)
                 {
-                    _currentTile.OnEnter();
+                    DragTileEvent?.Invoke(_currentTile);
                 }
             }
 
@@ -36,13 +38,13 @@ namespace _Project.Scripts.Match3.Input
             {
                 if (_currentTile != null) 
                 { 
-                    _currentTile.OnDown(); 
+                    ClickTileEvent?.Invoke(_currentTile); 
                 }
             }
 
             if (UnityEngine.Input.GetMouseButtonUp(0) && _currentTile != null)
             {
-                _currentTile.OnUp();
+                ReleaseTileEvent?.Invoke();
                 _currentTile = null;
             }
         }

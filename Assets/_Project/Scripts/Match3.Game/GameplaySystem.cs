@@ -1,5 +1,7 @@
 using _Project.Scripts.Match3.Game.BoardActor;
 using _Project.Scripts.Match3.Game.Effects;
+using _Project.Scripts.Match3.Game.Input;
+using _Project.Scripts.Match3.Game.TileActor;
 using UnityEngine;
 
 namespace _Project.Scripts.Match3.Game
@@ -7,12 +9,17 @@ namespace _Project.Scripts.Match3.Game
     public class GameplaySystem : global::Game.System
     {
         private ParticleManager _particleManager;
-        [SerializeField] private Board board;
+        private BoardManager _boardManager;
+        private InputManager _inputManager;
         
         protected override void SetupManagers()
         {
-            base.SetupManagers();
+            _boardManager = GetManager<BoardManager>();
+            _inputManager = GetManager<InputManager>();
             _particleManager = GetManager<ParticleManager>();
+            
+            _boardManager.Setup();
+            _inputManager.Setup();
             _particleManager.Setup();
         }
 
@@ -24,9 +31,14 @@ namespace _Project.Scripts.Match3.Game
 
         private void SetupEvents()
         {
-            board.ClearPiecePfxEvent += _particleManager.ClearPiecePfxAt;
-            board.BreakTilePfxEvent += _particleManager.BreakTilePfxAt;
-            board.BombPiecePfxEvent += _particleManager.BombPfxAt;
+            _inputManager.ClickTileEvent += _boardManager.ClickTile;
+            _inputManager.DragTileEvent += _boardManager.DragToTile;
+            _inputManager.ReleaseTileEvent += _boardManager.ReleaseTile;
+            
+            _boardManager.ClearPiecePfxEvent += _particleManager.ClearPiecePfxAt;
+            _boardManager.BreakTilePfxEvent += _particleManager.BreakTilePfxAt;
+            _boardManager.BombPiecePfxEvent += _particleManager.BombPfxAt;
+            
         }
         
         

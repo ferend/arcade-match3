@@ -10,24 +10,22 @@ namespace _Project.Scripts.Match3.Game.TileActor
     [RequireComponent(typeof(SpriteRenderer))]
     public class Tile : MonoBehaviour
     {
-        [FormerlySerializedAs("TileType")] [SerializeField] internal TileType tileType = TileType.Normal;
+        [SerializeField] internal TileType tileType = TileType.Normal;
 
         internal int XIndex;
         internal int YIndex;
         
-        private Board _gameBoard;
-
         private SpriteRenderer _spriteRenderer;
 
         public int breakableValue = 0;
         [SerializeField] private Sprite[] breakableSprites;
         [SerializeField] private Color normalColor;
-
+        
+        
         public void InitTile(int x , int y ,Board board)
         {
             XIndex = x;
             YIndex = y;
-            _gameBoard = board;
             
             if (tileType == TileType.Breakable )
             {
@@ -49,12 +47,6 @@ namespace _Project.Scripts.Match3.Game.TileActor
             DisableObstacleCollider();
         }
         
-
-        public void OnEnter() => _gameBoard.DragToTile(this);
-
-        public void OnDown() => _gameBoard.ClickTile(this);
-        public void OnUp() => _gameBoard.ReleaseTile();
-
         private void DisableObstacleCollider()
         {
             if (tileType == TileType.Obstacle)
