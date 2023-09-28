@@ -371,7 +371,10 @@ namespace _Project.Scripts.Match3.Game.BoardActor
                 bombedPieces = board.GetBombedPieces(gamePieces);
                 gamePieces = gamePieces.Union(bombedPieces).ToList();
 
-                List<GamePiece> collectedPieces = FindCollectiblesAt(0);
+                List<GamePiece> collectedPieces = FindCollectiblesAt(0, true);
+                List<GamePiece> allCollectibles = FindAllCollectibles();
+                List<GamePiece> blockers = gamePieces.Intersect(allCollectibles).ToList();
+                collectedPieces = collectedPieces.Union(blockers).ToList();
                 board.collectibleCount -= collectedPieces.Count;
 
                 gamePieces = gamePieces.Union(collectedPieces).ToList();
@@ -389,7 +392,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
                 List<GamePiece> matches = CombineMatches(movingPieces);
                 
                 // Check bottom row for collectibles. Fix waiting issue
-                collectedPieces = FindCollectiblesAt(0);
+                collectedPieces = FindCollectiblesAt(0, true);
                 matches = matches.Union(collectedPieces).ToList();
 
                 if (matches.Count == 0)
@@ -536,7 +539,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         }
         
 
-        private List<GamePiece> FindCollectiblesAt(int row)
+        private List<GamePiece> FindCollectiblesAt(int row, bool collectedAtBottom = false)
         {
             List<GamePiece> foundCollectibles = new List<GamePiece>();
 
@@ -548,7 +551,10 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
                     if (collectible != null)
                     {
-                        foundCollectibles.Add(board.gamePieceArray[i,row]);
+                        if (!collectedAtBottom || (collectedAtBottom && collectible.clearedAtBottom))
+                        {
+                            foundCollectibles.Add(board.gamePieceArray[i,row]);
+                        }
                     }
                 }
             }

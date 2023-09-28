@@ -7,8 +7,8 @@ namespace _Project.Scripts.Match3.Game.Collectibles
 {
     public class Collectible : GamePiece
     {
-        internal bool clearedByBomb = false;
-        internal bool clearedAtBottom = false;
+        internal readonly bool clearedByBomb = false;
+        internal readonly bool clearedAtBottom = false;
         
         private void Start()
         {
