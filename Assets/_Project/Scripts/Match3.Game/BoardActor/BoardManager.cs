@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using _Project.Scripts.Match3.Actor;
+using _Project.Scripts.Match3.Game.Collectibles;
 using _Project.Scripts.Match3.Game.PieceActor;
 using _Project.Scripts.Match3.Game.Powerup;
 using _Project.Scripts.Match3.Game.TileActor;
@@ -31,8 +32,9 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         [SerializeField] private GameObject colorBombPrefab;
         [SerializeField] private GameObject rowBombPrefab;
         [SerializeField] private GameObject adjacentBombPrefab;
-        [SerializeField] internal GameObject tileNormalPrefab; 
-        [SerializeField] internal GamePiece gamePiece;
+        [SerializeField] private GameObject tileNormalPrefab; 
+        [SerializeField] private GameObject[] collectiblePrefabs; 
+        [SerializeField] private GamePiece gamePiece;
 
         private Bomb _clickedTileBomb;
         private Bomb _targetTileBomb;
@@ -48,10 +50,14 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             SetupTiles();
             SetupGamePieces();
             FillBoard();
+
+            List<GamePiece> startingCollectibles = FindAllCollectibles();
+            board.collectibleCount = startingCollectibles.Count;
+
         }
         
-        private void InitTileArray() => board.TileArray = new Tile[board.Width, board.Height];
-        private void InitGamePieceArray() => board.GamePieceArray = new GamePiece[board.Width, board.Height];
+        private void InitTileArray() => board.tileArray = new Tile[board.width, board.height];
+        private void InitGamePieceArray() => board.gamePieceArray = new GamePiece[board.width, board.height];
 
         private void SetupTiles()
         {
@@ -60,11 +66,11 @@ namespace _Project.Scripts.Match3.Game.BoardActor
                 if(sTile == null) return;
                 CreateTile(sTile.tilePrefab,sTile.x,sTile.y);
             }
-            for (int i = 0; i < board.Width; i++)
+            for (int i = 0; i < board.width; i++)
             {
-                for (int j = 0; j < board.Height; j++)
+                for (int j = 0; j < board.height; j++)
                 {
-                    if (board.TileArray[i, j] == null)
+                    if (board.tileArray[i, j] == null)
                     {
                         CreateTile(tileNormalPrefab, i, j);
                     }
@@ -89,12 +95,12 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         
         private void CreateTile(GameObject prefab, int x, int y, int z = 0)
         {
-            if (prefab != null && ExtensionMethods.IsInBounds(x, y, board.Width, board.Height))
+            if (prefab != null && ExtensionMethods.IsInBounds(x, y, board.width, board.height))
             {
                 GameObject tile = Instantiate(prefab, new Vector3(x, y, z), Quaternion.identity);
-                board.TileArray[x, y] = tile.GetComponent<Tile>();
+                board.tileArray[x, y] = tile.GetComponent<Tile>();
                 tile.transform.parent = board.transform;
-                board.TileArray[x, y].InitTile(x, y, board);    
+                board.tileArray[x, y].InitTile(x, y, board);    
             }
             
         }
@@ -104,11 +110,11 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             int maxIterations = 100;
             int iterations;
       
-            for (int i = 0; i < board.Width; i++)
+            for (int i = 0; i < board.width; i++)
             {
-                for (int j = 0; j <board. Height; j++)
+                for (int j = 0; j <board. height; j++)
                 {
-                    if (board.GamePieceArray[i, j] == null && board.TileArray[i,j].tileType != TileType.Obstacle)
+                    if (board.gamePieceArray[i, j] == null && board.tileArray[i,j].tileType != TileType.Obstacle)
                     {
                         FillRandomAt(i, j,falseYOffset);
                         iterations = 0;
@@ -131,12 +137,12 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         
         void ClearPieceAtPosition(int x, int y)
         {
-            GamePiece pieceToClear = board.GamePieceArray[x, y];
+            GamePiece pieceToClear = board.gamePieceArray[x, y];
 
 
             if (pieceToClear != null)
             {
-                board.GamePieceArray[x, y] = null;
+                board.gamePieceArray[x, y] = null;
                 Destroy(pieceToClear.gameObject);
             }
         }
@@ -159,7 +165,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
         private void FillRandomAt(int x, int y, int falseYOffset = 0 )
         {
-            if (ExtensionMethods.IsInBounds(x, y, board.Width, board.Height))
+            if (ExtensionMethods.IsInBounds(x, y, board.width, board.height))
             {
                 GamePiece randomPiece = Instantiate(gamePiece, Vector3.zero, Quaternion.identity);
                 CreateGamePiece(randomPiece, x, y, falseYOffset);
@@ -178,7 +184,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         
         private void CreateGamePiece( GamePiece prefab, int x, int y, int falseYOffset = 0, float moveTime = 0.1f)
         {
-            if (prefab != null && ExtensionMethods.IsInBounds(x, y, board.Width, board.Height))
+            if (prefab != null && ExtensionMethods.IsInBounds(x, y, board.width, board.height))
             {
                 prefab.SetBoard(board);
                 board.PlaceGamePiece(prefab, x, y);
@@ -198,7 +204,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
         private void BreakTileAt(int x , int y)
         {
-            Tile tileToBreak = board.TileArray[x, y];
+            Tile tileToBreak = board.tileArray[x, y];
             if (tileToBreak != null && tileToBreak.tileType == TileType.Breakable)
             {
                 BreakTilePfxEvent?.Invoke(tileToBreak.breakableValue, x, y, 0);
@@ -219,52 +225,52 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         
         public void ClickTile(Tile tile)
         {
-            if(board.ClickedTile == null && _canGetInput)
-                board.ClickedTile = tile;
+            if(board.clickedTile == null && _canGetInput)
+                board.clickedTile = tile;
         }
 
         public void DragToTile(Tile tile)
         {
-            if (board.ClickedTile != null &&  board.IsNextTo(tile, board.ClickedTile) && _canGetInput) 
-                board.TargetTile = tile;
+            if (board.clickedTile != null &&  board.IsNextTo(tile, board.clickedTile) && _canGetInput) 
+                board.targetTile = tile;
         }
         
         public void ReleaseTile()
         {
-            if (board.ClickedTile != null && board.TargetTile != null  && _canGetInput )
+            if (board.clickedTile != null && board.targetTile != null  && _canGetInput )
             {
-                StartCoroutine(SwitchTiles(board.ClickedTile,board.TargetTile, () => _canGetInput = true));
+                StartCoroutine(SwitchTiles(board.clickedTile,board.targetTile, () => _canGetInput = true));
             }
             else
             {
-                board.ClickedTile = null;
-                board.TargetTile = null;
+                board.clickedTile = null;
+                board.targetTile = null;
             }
 
             IEnumerator SwitchTiles(Tile current , Tile target, Action onComplete)
             {
                 _canGetInput = false;
                 
-                GamePiece clickedPiece = board.GamePieceArray[current.XIndex, current.YIndex];
-                GamePiece targetPiece = board.GamePieceArray[target.XIndex, target.YIndex];
+                GamePiece clickedPiece = board.gamePieceArray[current.XIndex, current.YIndex];
+                GamePiece targetPiece = board.gamePieceArray[target.XIndex, target.YIndex];
 
 
                 if (targetPiece != null && clickedPiece != null)
                 {
-                    clickedPiece.MoveGamePiece(board.TargetTile.XIndex,board.TargetTile.YIndex,_swapTime); 
-                    targetPiece.MoveGamePiece(board.ClickedTile.XIndex,board.ClickedTile.YIndex,_swapTime);
+                    clickedPiece.MoveGamePiece(board.targetTile.XIndex,board.targetTile.YIndex,_swapTime); 
+                    targetPiece.MoveGamePiece(board.clickedTile.XIndex,board.clickedTile.YIndex,_swapTime);
                     
                     yield return _swapWaiter;
 
-                    List<GamePiece> clickedPieceMatches = CombineMatches(board.ClickedTile.XIndex, board.ClickedTile.YIndex);
-                    List<GamePiece> targetPieceMatches = CombineMatches(board.TargetTile.XIndex, board.TargetTile.YIndex);
+                    List<GamePiece> clickedPieceMatches = CombineMatches(board.clickedTile.XIndex, board.clickedTile.YIndex);
+                    List<GamePiece> targetPieceMatches = CombineMatches(board.targetTile.XIndex, board.targetTile.YIndex);
                     
                     var colorMatches = board.GetSameColorPieces(clickedPiece, targetPiece);
 
                     if (targetPieceMatches.Count == 0 && clickedPieceMatches.Count == 0 && colorMatches.Count == 0)
                     {
-                        clickedPiece.MoveGamePiece(board.ClickedTile.XIndex,board.ClickedTile.YIndex,_swapTime);
-                        targetPiece.MoveGamePiece(board.TargetTile.XIndex,board.TargetTile.YIndex,_swapTime);
+                        clickedPiece.MoveGamePiece(board.clickedTile.XIndex,board.clickedTile.YIndex,_swapTime);
+                        targetPiece.MoveGamePiece(board.targetTile.XIndex,board.targetTile.YIndex,_swapTime);
                     }
                     else
                     {
@@ -278,8 +284,8 @@ namespace _Project.Scripts.Match3.Game.BoardActor
                         StartCoroutine(ClearAndRefillBoard(clickedPieceMatches.Union(targetPieceMatches).ToList().Union(colorMatches).ToList()));
                     }
                     
-                    board.ClickedTile = null;
-                    board.TargetTile = null;
+                    board.clickedTile = null;
+                    board.targetTile = null;
                 }
 
                 onComplete?.Invoke();
@@ -361,7 +367,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         
         private Bomb CreateBomb(GameObject prefab, int x, int y, int z = 0)
         {
-            if (prefab != null && ExtensionMethods.IsInBounds(x, y, board.Width, board.Height))
+            if (prefab != null && ExtensionMethods.IsInBounds(x, y, board.width, board.height))
             {
                 Bomb bomb = Instantiate(prefab.GetComponent<Bomb>(), new Vector3(x, y, 0), Quaternion.identity);
                 bomb.SetBoard(board);
@@ -380,9 +386,9 @@ namespace _Project.Scripts.Match3.Game.BoardActor
                 int x = (int)_clickedTileBomb.transform.position.x;
                 int y = (int)_clickedTileBomb.transform.position.y;
 
-                if (ExtensionMethods.IsInBounds(x, y, board.Width, board.Height))
+                if (ExtensionMethods.IsInBounds(x, y, board.width, board.height))
                 {
-                   board.GamePieceArray[x, y] = _clickedTileBomb.GetComponent<GamePiece>();
+                   board.gamePieceArray[x, y] = _clickedTileBomb.GetComponent<GamePiece>();
                 }
                 _clickedTileBomb = null;
             }
@@ -392,9 +398,9 @@ namespace _Project.Scripts.Match3.Game.BoardActor
                 int x = (int)_targetTileBomb.transform.position.x;
                 int y = (int)_targetTileBomb.transform.position.y;
 
-                if (ExtensionMethods.IsInBounds(x, y, board.Width, board.Height))
+                if (ExtensionMethods.IsInBounds(x, y, board.width, board.height))
                 {
-                    board.GamePieceArray[x, y] = _targetTileBomb.GetComponent<GamePiece>();
+                    board.gamePieceArray[x, y] = _targetTileBomb.GetComponent<GamePiece>();
                 }
                 _targetTileBomb = null;
             }
@@ -404,9 +410,9 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         private void PerformDropBomb(List<GamePiece> clickedPieceMatches, List<GamePiece> targetPieceMatches)
         {
             Vector2 swipeDirection =
-                new Vector2(board.TargetTile.XIndex - board.ClickedTile.XIndex, board.TargetTile.YIndex - board.ClickedTile.YIndex);
-            _clickedTileBomb = DropBomb(board.ClickedTile.XIndex, board.ClickedTile.YIndex, swipeDirection, clickedPieceMatches);
-            _targetTileBomb = DropBomb(board.TargetTile.XIndex, board.TargetTile.YIndex, swipeDirection, targetPieceMatches);
+                new Vector2(board.targetTile.XIndex - board.clickedTile.XIndex, board.targetTile.YIndex - board.clickedTile.YIndex);
+            _clickedTileBomb = DropBomb(board.clickedTile.XIndex, board.clickedTile.YIndex, swipeDirection, clickedPieceMatches);
+            _targetTileBomb = DropBomb(board.targetTile.XIndex, board.targetTile.YIndex, swipeDirection, targetPieceMatches);
         }
         
         Bomb DropBomb(int x, int y, Vector2 swapDirection, List<GamePiece> gamePieces)
@@ -451,7 +457,41 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
             return bomb;
         }
+        
+        private List<GamePiece> FindAllCollectibles()
+        {
+            List<GamePiece> foundCollectibles = new List<GamePiece>();
 
+            for (int i = 0; i < board.height; i++)
+            {
+                List<GamePiece> collectibleRow = FindCollectiblesAt(i);
+                foundCollectibles = foundCollectibles.Union(collectibleRow).ToList();
+            }
+
+            return foundCollectibles;
+        }
+
+
+        private List<GamePiece> FindCollectiblesAt(int row)
+        {
+            List<GamePiece> foundCollectibles = new List<GamePiece>();
+
+            for (int i = 0; i < board.width; i++)
+            {
+                if (board.gamePieceArray[i, row] != null)
+                {
+                    Collectible collectible = board.gamePieceArray[i, row].GetComponent<Collectible>();
+
+                    if (collectible != null)
+                    {
+                        foundCollectibles.Add(board.gamePieceArray[i,row]);
+                    }
+                }
+            }
+
+            return foundCollectibles;
+        }
+        
 
     }
 }

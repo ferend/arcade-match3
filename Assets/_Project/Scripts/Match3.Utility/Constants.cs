@@ -11,6 +11,7 @@ namespace _Project.Scripts.Match3.Utility
 
         public static readonly Color[] TILE_COLORS = new[]
         {
+            default,
             Color.blue,
             Color.red,
             Color.yellow,

@@ -14,32 +14,37 @@ namespace _Project.Scripts.Match3.Game.PieceActor
         internal int xIndex;
         internal int yIndex;
         
-        internal SpriteRenderer SpriteRenderer;
+        internal SpriteRenderer spriteRenderer;
         private Color[] _colors = Constants.TILE_COLORS;
 
         private bool _isMoving = false;
 
-        internal Board GameBoard;
+        internal Board gameBoard;
 
         public Color gamePieceColor;
 
         private void Awake()
         {
-            SpriteRenderer = this.GetComponent<SpriteRenderer>();
+            spriteRenderer = this.GetComponent<SpriteRenderer>();
             SetSpriteColor();
         }
 
         public void SetBoard(Board board)
         {
-            GameBoard = board;
+            gameBoard = board;
+        }
+
+        public void SetDefaultSpriteColor()
+        {
+            this.spriteRenderer.color = Color.white;
         }
         
         private void SetSpriteColor()
         {
             Bomb bomb = this.GetComponent<Bomb>();
-            int randomIndex = Random.Range(0, _colors.Length);
+            int randomIndex = Random.Range(1, _colors.Length);
             Color randomColor = _colors[randomIndex];
-            SpriteRenderer.color = randomColor;
+            spriteRenderer.color = randomColor;
             gamePieceColor = randomColor;
         }
 
@@ -65,9 +70,9 @@ namespace _Project.Scripts.Match3.Game.PieceActor
             {
                 if (Vector3.Distance(transform.position, destination) < 0.01f)
                 {
-                    if (GameBoard != null)
+                    if (gameBoard != null)
                     {
-                        GameBoard.PlaceGamePiece(this, (int) destination.x, (int) destination.y);
+                        gameBoard.PlaceGamePiece(this, (int) destination.x, (int) destination.y);
                     }
                     break;
                 }

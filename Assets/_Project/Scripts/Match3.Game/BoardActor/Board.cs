@@ -15,25 +15,26 @@ namespace _Project.Scripts.Match3.Game.BoardActor
     {
         [Header("Rules")]
         [SerializeField] internal bool dropBombAfterMatch = false;
-        [SerializeField] public int matchCountForBombDrop = 4;
-        [SerializeField] public int matchCountForColorBombDrop = 5;
+        [SerializeField] internal int matchCountForBombDrop = 4;
+        [SerializeField] internal int matchCountForColorBombDrop = 5;
+        [SerializeField] internal int maxCollectibleCount = 3;
+        [SerializeField] internal int collectibleCount = 0;
+        [Range(0,1)]
+        [SerializeField] internal float chanceForCollectible = 0.1f;
         
-        internal readonly int Width = Constants.BOARD_WIDTH;
-        internal readonly int Height = Constants.BOARD_HEIGHT;
-
+        internal readonly int width = Constants.BOARD_WIDTH;
+        internal readonly int height = Constants.BOARD_HEIGHT;
 
         [Space(10)]
         [Header("Pre-Defined Pieces")]
         [SerializeField] internal StartingTile[] startingTiles;
         [SerializeField] internal StartingTile[] startingGamePieces;
         
-        internal Tile[,] TileArray;
-        internal GamePiece[,] GamePieceArray;
+        internal Tile[,] tileArray;
+        internal GamePiece[,] gamePieceArray;
 
-        internal Tile ClickedTile;
-        internal Tile TargetTile;
-
-        
+        internal Tile clickedTile;
+        internal Tile targetTile;
 
         public void PlaceGamePiece(GamePiece gamePiece, int x , int y )
         {
@@ -42,9 +43,9 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             gamePiece.transform.position = new Vector3(x, y, 0);
             gamePiece.transform.rotation = Quaternion.identity;
             
-            if (ExtensionMethods.IsInBounds(x, y, Width, Height))
+            if (ExtensionMethods.IsInBounds(x, y, width, height))
             {            
-                GamePieceArray[x, y] = gamePiece;
+                gamePieceArray[x, y] = gamePiece;
             }
             
             gamePiece.SetCoord(x,y);
@@ -67,7 +68,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             }
             else if (IsColorBomb(clickedPiece) && IsColorBomb(targetPiece))
             {
-                foreach (GamePiece piece in GamePieceArray)
+                foreach (GamePiece piece in gamePieceArray)
                 {
                     if (!colorMatches.Contains(piece))
                     {
@@ -139,9 +140,9 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
             GamePiece startPiece = null;
 
-            if (ExtensionMethods.IsInBounds(startX, startY,Width,Height))
+            if (ExtensionMethods.IsInBounds(startX, startY,width,height))
             {
-                startPiece = GamePieceArray[startX, startY];
+                startPiece = gamePieceArray[startX, startY];
             }
 
             if (startPiece !=null)
@@ -157,26 +158,26 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             int nextX;
             int nextY;
 
-            int maxValue = (Width > Height) ? Width: Height;
+            int maxValue = (width > height) ? width: height;
 
             for (int i = 1; i < maxValue - 1; i++)
             {
                 nextX = startX + (int) Mathf.Clamp(searchDirection.x,-1,1) * i;
                 nextY = startY + (int) Mathf.Clamp(searchDirection.y,-1,1) * i;
 
-                if (!ExtensionMethods.IsInBounds(nextX, nextY,Width,Height))
+                if (!ExtensionMethods.IsInBounds(nextX, nextY,width,height))
                 {
                     break;
                 }
 
-                GamePiece nextPiece = GamePieceArray[nextX, nextY];
+                GamePiece nextPiece = gamePieceArray[nextX, nextY];
 
                 if (nextPiece == null)
                 {
                     break;
                 }
 
-                if (nextPiece.gamePieceColor == startPiece.gamePieceColor && !matches.Contains(nextPiece))
+                if (nextPiece.gamePieceColor == startPiece.gamePieceColor && !matches.Contains(nextPiece) && nextPiece.gamePieceColor != default)
                 {
                     matches.Add(nextPiece);
                 }
@@ -214,24 +215,24 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         {
             List<GamePiece> movingPieces = new List<GamePiece>();
 
-            for (int i = 0; i < Height - 1; i++)
+            for (int i = 0; i < height - 1; i++)
             {
-                if (GamePieceArray[column, i] == null && TileArray[column,i].tileType != TileType.Obstacle)
+                if (gamePieceArray[column, i] == null && tileArray[column,i].tileType != TileType.Obstacle)
                 {
-                    for (int j = i + 1; j < Height; j++)
+                    for (int j = i + 1; j < height; j++)
                     {
-                        if (GamePieceArray[column, j] != null)
+                        if (gamePieceArray[column, j] != null)
                         {
-                            GamePieceArray[column, j].MoveGamePiece(column, i, collapseTime * (j - i) );
-                            GamePieceArray[column, i] = GamePieceArray[column, j];
-                            GamePieceArray[column, i].SetCoord(column, i);
+                            gamePieceArray[column, j].MoveGamePiece(column, i, collapseTime * (j - i) );
+                            gamePieceArray[column, i] = gamePieceArray[column, j];
+                            gamePieceArray[column, i].SetCoord(column, i);
 
-                            if (!movingPieces.Contains(GamePieceArray[column, i]))
+                            if (!movingPieces.Contains(gamePieceArray[column, i]))
                             {
-                                movingPieces.Add(GamePieceArray[column, i]);
+                                movingPieces.Add(gamePieceArray[column, i]);
                             }
 
-                            GamePieceArray[column, j] = null;
+                            gamePieceArray[column, j] = null;
                             break;
 
                         }
@@ -335,15 +336,15 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         {
             List<GamePiece> foundPieces = new List<GamePiece>();
 
-            for (int i = 0; i < Width; i++)
+            for (int i = 0; i < width; i++)
             {
-                for (int j = 0; j < Height; j++)
+                for (int j = 0; j < height; j++)
                 {
-                    if (GamePieceArray[i,j] !=null)
+                    if (gamePieceArray[i,j] !=null)
                     {
-                        if (GamePieceArray[i,j].gamePieceColor == matchValue)
+                        if (gamePieceArray[i,j].gamePieceColor == matchValue)
                         {
-                            foundPieces.Add(GamePieceArray[i,j]);
+                            foundPieces.Add(gamePieceArray[i,j]);
                         }
                     }
                 }
@@ -361,9 +362,9 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         
         private void OnDrawGizmos()
         {
-            for (int i = 0; i < Width; i++)
+            for (int i = 0; i < width; i++)
             {
-                for (int j = 0; j < Height; j++)
+                for (int j = 0; j < height; j++)
                 {
                     Handles.Label(new Vector3(i,j), "x" + i + "y" + j);
                 }

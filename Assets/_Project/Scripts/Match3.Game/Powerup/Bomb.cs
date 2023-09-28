@@ -16,29 +16,21 @@ namespace _Project.Scripts.Match3.Game.Powerup
     public class Bomb : GamePiece
     {
         public BombType bombType;
-
+        
         private void Start()
         {
-          SetDefaultSpriteColor();
-        }
-
-        private void SetDefaultSpriteColor()
-        {
-            if (bombType == BombType.Color)
-            {
-                this.SpriteRenderer.color = Color.white;
-            }
+            SetDefaultSpriteColor();
         }
 
         public List<GamePiece> GetRowPieces(int row)
         {
             List<GamePiece> gamePieces = new List<GamePiece>();
 
-            for (int i = 0; i < GameBoard.Width; i++)
+            for (int i = 0; i < gameBoard.width; i++)
             {
-                if (GameBoard.GamePieceArray[i, row] != null)
+                if (gameBoard.gamePieceArray[i, row] != null)
                 {
-                    gamePieces.Add(GameBoard.GamePieceArray[i,row]);
+                    gamePieces.Add(gameBoard.gamePieceArray[i,row]);
                 }
             }
 
@@ -49,11 +41,11 @@ namespace _Project.Scripts.Match3.Game.Powerup
         {
             List<GamePiece> gamePieces = new List<GamePiece>();
 
-            for (int i = 0; i < GameBoard.Height; i++)
+            for (int i = 0; i < gameBoard.height; i++)
             {
-                if (GameBoard.GamePieceArray[column, i] != null)
+                if (gameBoard.gamePieceArray[column, i] != null)
                 {
-                    gamePieces.Add(GameBoard.GamePieceArray[column, i]);
+                    gamePieces.Add(gameBoard.gamePieceArray[column, i]);
                 }
             }
 
@@ -68,9 +60,9 @@ namespace _Project.Scripts.Match3.Game.Powerup
             {
                 for (int j = y - offset; j <= y + offset; j++)
                 {
-                    if (ExtensionMethods.IsInBounds(i, j, GameBoard.Width, GameBoard.Height))
+                    if (ExtensionMethods.IsInBounds(i, j, gameBoard.width, gameBoard.height))
                     {
-                        gamePieces.Add(GameBoard.GamePieceArray[i,j]);
+                        gamePieces.Add(gameBoard.gamePieceArray[i,j]);
                     }
                 }
             }
