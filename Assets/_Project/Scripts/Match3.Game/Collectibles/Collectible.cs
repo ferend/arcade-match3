@@ -14,6 +14,7 @@ namespace _Project.Scripts.Match3.Game.Collectibles
         {
             gamePieceColor = Constants.TILE_COLORS[0];
             SetDefaultSpriteColor();
+            scoreValue = 100;
         }
     }
 }

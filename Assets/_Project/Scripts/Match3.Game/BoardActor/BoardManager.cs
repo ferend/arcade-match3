@@ -27,6 +27,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         public event Action<int, int, int> ClearPiecePfxEvent;
         public event Action<int, int, int> BombPiecePfxEvent;
         public event Action<int ,int, int, int> BreakTilePfxEvent;
+        public event Action<int> AddScoreEvent;
         
         [Space(10)]
         [Header("Prefabs")]
@@ -165,6 +166,9 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             foreach (GamePiece piece in gamePieces)
             {
                 ClearPieceAtPosition(piece.xIndex, piece.yIndex);
+                
+                AddScoreEvent?.Invoke(piece.scoreValue);
+                
                 if (bombedPieces.Contains(piece))
                 {
                     BombPiecePfxEvent?.Invoke(piece.xIndex,piece.yIndex,0);

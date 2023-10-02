@@ -22,11 +22,13 @@ namespace _Project.Scripts.Match3.Game.PieceActor
         internal Board gameBoard;
 
         public Color gamePieceColor;
+        internal int scoreValue;
 
         private void Awake()
         {
             spriteRenderer = this.GetComponent<SpriteRenderer>();
             SetSpriteColor();
+            scoreValue = 1;
         }
 
         public void SetBoard(Board board)

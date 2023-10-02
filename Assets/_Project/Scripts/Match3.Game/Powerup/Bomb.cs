@@ -5,14 +5,6 @@ using UnityEngine;
 
 namespace _Project.Scripts.Match3.Game.Powerup
 {
-    public enum BombType
-    {
-        None,
-        Column,
-        Row,
-        Adjacent,
-        Color
-    }
     public class Bomb : GamePiece
     {
         public BombType bombType;
@@ -23,6 +15,8 @@ namespace _Project.Scripts.Match3.Game.Powerup
             {
                 SetDefaultSpriteColor();
             }
+
+            scoreValue = 2;
         }
 
         public List<GamePiece> GetRowPieces(int row)
