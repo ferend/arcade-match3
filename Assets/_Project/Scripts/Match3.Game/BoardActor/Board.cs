@@ -20,6 +20,8 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         [SerializeField] internal int matchCountForColorBombDrop = 5;
         [SerializeField] internal int maxCollectibleCount = 3;
         [SerializeField] internal int collectibleCount = 0;
+        [SerializeField] internal int movesLeft = 30;
+        
         [Range(0,1)]
         [SerializeField] internal float chanceForCollectible = 0.1f;
         

@@ -28,6 +28,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         public event Action<int, int, int> BombPiecePfxEvent;
         public event Action<int ,int, int, int> BreakTilePfxEvent;
         public event Action<int> AddScoreEvent;
+        public event Action<int> MovesLeftEvent;
         
         [Space(10)]
         [Header("Prefabs")]
@@ -43,21 +44,21 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         
         public override void Setup()
         {
-           
             _swapWaiter = new WaitForSeconds(_swapTime);
             _collapseWaiter = new WaitForSeconds(0.25f);
-            
+        }
+
+        public void SetGameBoard()
+        {
             InitTileArray();
             InitGamePieceArray();
             SetupTiles();
             SetupGamePieces();
             FillBoard();
-
+            
             List<GamePiece> startingCollectibles = FindAllCollectibles();
             board.collectibleCount = startingCollectibles.Count;
-
             board.removeCollectibleDelegate = RemoveCollectibles;
-
         }
         
         private void InitTileArray() => board.tileArray = new Tile[board.width, board.height];
@@ -311,6 +312,8 @@ namespace _Project.Scripts.Match3.Game.BoardActor
                     }
                     else
                     {
+                        UpdateMovesLeft();
+
                         yield return _swapWaiter;
 
                         if (board.dropBombAfterMatch)
@@ -329,8 +332,19 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
             }
 
-        } 
-        
+        }
+
+        private void UpdateMovesLeft()
+        {
+            board.movesLeft--;
+            MovesLeftEvent?.Invoke(board.movesLeft);
+            
+            if (board.movesLeft == 0)
+            {
+                Debug.Log("No more move left");
+            }
+        }
+
         private List<GamePiece> CombineMatches(int x, int y)
         {
               List<GamePiece> horMatches = board.FindHorizontalMatches(x, y);
