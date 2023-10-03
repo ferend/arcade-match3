@@ -15,10 +15,11 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 {
     public class BoardManager : Manager
     {
-        [SerializeField] private Board board;
+        [SerializeField] internal Board board;
         [SerializeField] private GamePiece gamePiece;
 
-        private bool _canGetInput = true;
+        public bool canGetInput = true;
+        public bool canDropTiles = true;
         
         private readonly float _swapTime = Constants.TILE_SWAP_TIME;
         private WaitForSeconds _swapWaiter;
@@ -29,6 +30,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         public event Action<int ,int, int, int> BreakTilePfxEvent;
         public event Action<int> AddScoreEvent;
         public event Action<int> MovesLeftEvent;
+        public event Action GameStatusEvent;
         
         [Space(10)]
         [Header("Prefabs")]
@@ -50,6 +52,8 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
         public void SetGameBoard()
         {
+            board.gameObject.SetActive(true);
+            
             InitTileArray();
             InitGamePieceArray();
             SetupTiles();
@@ -59,6 +63,11 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             List<GamePiece> startingCollectibles = FindAllCollectibles();
             board.collectibleCount = startingCollectibles.Count;
             board.removeCollectibleDelegate = RemoveCollectibles;
+        }
+
+        public void CloseGameBoard()
+        {
+            board.gameObject.SetActive(false);
         }
         
         private void InitTileArray() => board.tileArray = new Tile[board.width, board.height];
@@ -167,7 +176,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
             foreach (GamePiece piece in gamePieces)
             {
                 ClearPieceAtPosition(piece.xIndex, piece.yIndex);
-                
+
                 AddScoreEvent?.Invoke(piece.scoreValue);
                 
                 if (bombedPieces.Contains(piece))
@@ -263,21 +272,23 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         
         public void ClickTile(Tile tile)
         {
-            if(board.clickedTile == null && _canGetInput)
+            if(board.clickedTile == null && canGetInput)
                 board.clickedTile = tile;
         }
 
         public void DragToTile(Tile tile)
         {
-            if (board.clickedTile != null &&  board.IsNextTo(tile, board.clickedTile) && _canGetInput) 
+            if (board.clickedTile != null &&  board.IsNextTo(tile, board.clickedTile) && canGetInput) 
                 board.targetTile = tile;
         }
         
         public void ReleaseTile()
         {
-            if (board.clickedTile != null && board.targetTile != null  && _canGetInput )
+            GameStatusEvent?.Invoke();
+
+            if (board.clickedTile != null && board.targetTile != null  && canGetInput )
             {
-                StartCoroutine(SwitchTiles(board.clickedTile,board.targetTile, () => _canGetInput = true));
+                StartCoroutine(SwitchTiles(board.clickedTile,board.targetTile, () => canGetInput = true));
             }
             else
             {
@@ -287,8 +298,9 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
             IEnumerator SwitchTiles(Tile current , Tile target, Action onComplete)
             {
-                _canGetInput = false;
-                
+
+                canGetInput = false;
+
                 GamePiece clickedPiece = board.gamePieceArray[current.XIndex, current.YIndex];
                 GamePiece targetPiece = board.gamePieceArray[target.XIndex, target.YIndex];
 
@@ -304,6 +316,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
                     List<GamePiece> targetPieceMatches = CombineMatches(board.targetTile.XIndex, board.targetTile.YIndex);
                     
                     var colorMatches = board.GetSameColorPieces(clickedPiece, targetPiece);
+                    
 
                     if (targetPieceMatches.Count == 0 && clickedPieceMatches.Count == 0 && colorMatches.Count == 0)
                     {
@@ -321,7 +334,10 @@ namespace _Project.Scripts.Match3.Game.BoardActor
                             PerformDropBomb(clickedPieceMatches, targetPieceMatches);
                         }
 
-                        StartCoroutine(ClearAndRefillBoard(clickedPieceMatches.Union(targetPieceMatches).ToList().Union(colorMatches).ToList()));
+                        if (canDropTiles)
+                        {
+                            StartCoroutine(ClearAndRefillBoard(clickedPieceMatches.Union(targetPieceMatches).ToList().Union(colorMatches).ToList()));
+                        }
                     }
                     
                     board.clickedTile = null;
@@ -329,20 +345,14 @@ namespace _Project.Scripts.Match3.Game.BoardActor
                 }
 
                 onComplete?.Invoke();
-
+                
             }
-
         }
 
         private void UpdateMovesLeft()
         {
             board.movesLeft--;
             MovesLeftEvent?.Invoke(board.movesLeft);
-            
-            if (board.movesLeft == 0)
-            {
-                Debug.Log("No more move left");
-            }
         }
 
         private List<GamePiece> CombineMatches(int x, int y)
@@ -376,11 +386,12 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
         IEnumerator ClearAndRefillBoard(List<GamePiece> gamePieces)
         {
+
             yield return _collapseWaiter;
             
             while (true)
             {
-                _canGetInput = false;
+                canGetInput = false;
 
                 List<GamePiece> bombedPieces = board.GetBombedPieces(gamePieces);
                 gamePieces = gamePieces.Union(bombedPieces).ToList();
@@ -424,7 +435,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
 
             yield return _collapseWaiter;
             FillBoard(10);
-            _canGetInput = true;
+            canGetInput = true;
         }
         
         
@@ -435,7 +446,7 @@ namespace _Project.Scripts.Match3.Game.BoardActor
                 Bomb bomb = Instantiate(prefab.GetComponent<Bomb>(), new Vector3(x, y, 0), Quaternion.identity);
                 bomb.SetBoard(board);
                 bomb.SetCoord(x,y);
-                bomb.transform.parent = this.transform;
+                bomb.transform.parent = board.transform;
                 return bomb;
             }
 

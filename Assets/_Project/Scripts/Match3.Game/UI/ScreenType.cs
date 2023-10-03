@@ -5,6 +5,7 @@ namespace _Project.Scripts.Match3.Game.UI
         Unset,
         Start,
         HUDScreen,
-        FinishScreen,
+        WinScreen,
+        LoseScreen,
     }
 }
