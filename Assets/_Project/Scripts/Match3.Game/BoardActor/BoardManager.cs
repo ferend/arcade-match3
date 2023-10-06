@@ -31,6 +31,8 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         public event Action<int> AddScoreEvent;
         public event Action<int> MovesLeftEvent;
         public event Action GameStatusEvent;
+        public event Action PlayPopSoundEvent;
+        public event Action PlayBombSoundEvent;
         
         [Space(10)]
         [Header("Prefabs")]
@@ -175,13 +177,16 @@ namespace _Project.Scripts.Match3.Game.BoardActor
         {
             foreach (GamePiece piece in gamePieces)
             {
+                PlayPopSoundEvent?.Invoke();
+
                 ClearPieceAtPosition(piece.xIndex, piece.yIndex);
 
                 AddScoreEvent?.Invoke(piece.scoreValue);
-                
+
                 if (bombedPieces.Contains(piece))
                 {
                     BombPiecePfxEvent?.Invoke(piece.xIndex,piece.yIndex,0);
+                    PlayBombSoundEvent?.Invoke();
                 }
                 else
                 {
@@ -339,10 +344,12 @@ namespace _Project.Scripts.Match3.Game.BoardActor
                             StartCoroutine(ClearAndRefillBoard(clickedPieceMatches.Union(targetPieceMatches).ToList().Union(colorMatches).ToList()));
                         }
                     }
+
                     
                     board.clickedTile = null;
                     board.targetTile = null;
                 }
+
 
                 onComplete?.Invoke();
                 
