@@ -1,18 +1,19 @@
 ﻿using _Project.Scripts.Game.Gamepiece;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 namespace _Project.Scripts.Game.Board
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using UnityEngine;
+
 
     namespace _Project.Scripts.Game.Board
     {
-        public class BombManager
+        public class BombController
         {
             private readonly BaseGamePiece[,] gamePieceArray;
 
-            public BombManager(BaseGamePiece[,] gamePieceArray, BoardComponent.RemoveCollectibleDelegate removeCollectibleDelegate)
+            public BombController(BaseGamePiece[,] gamePieceArray, BoardComponent.RemoveCollectibleDelegate removeCollectibleDelegate)
             {
                 this.gamePieceArray = gamePieceArray;
             }

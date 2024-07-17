@@ -37,19 +37,19 @@ namespace _Project.Scripts.Game.Board
         public delegate List<BaseGamePiece> RemoveCollectibleDelegate(List<BaseGamePiece> bombedPieces);
         internal RemoveCollectibleDelegate removeCollectibleDelegate;
 
-        private GamePieceManager gamePieceManager;
+        private GamePieceManager _gamePieceManager;
         public MatchFinder matchFinder;
-        private CollapseManager collapseManager;
-        private BombManager bombManager;
+        private CollapseController _collapseController;
+        private BombController _bombController;
         
         public void SetupBoardComponent()
         {
             InitTileArray();
             InitGamePieceArray();
             matchFinder = new MatchFinder(width, height, gamePieceArray);
-            gamePieceManager = new GamePieceManager(width, height, gamePieceArray);
-            collapseManager = new CollapseManager(width, height, gamePieceArray, tileArray);
-            bombManager = new BombManager(gamePieceArray, removeCollectibleDelegate);
+            _gamePieceManager = new GamePieceManager(width, height, gamePieceArray);
+            _collapseController = new CollapseController(width, height, gamePieceArray, tileArray);
+            _bombController = new BombController(gamePieceArray, removeCollectibleDelegate);
         }
         
         private void InitTileArray() => tileArray = new TileComponent[width, height];
@@ -58,19 +58,19 @@ namespace _Project.Scripts.Game.Board
 
         public void PlaceGamePiece(BaseGamePiece baseGamePiece, int x, int y)
         {
-            if (gamePieceManager != null) {
-                gamePieceManager.PlaceGamePiece(baseGamePiece, x, y);
+            if (_gamePieceManager != null) {
+                _gamePieceManager.PlaceGamePiece(baseGamePiece, x, y);
             }
         }
 
         public List<BaseGamePiece> GetSameColorPieces(BaseGamePiece clickedPiece, BaseGamePiece targetPiece)
         {
-            return gamePieceManager.GetSameColorPieces(clickedPiece, targetPiece);
+            return _gamePieceManager.GetSameColorPieces(clickedPiece, targetPiece);
         }
 
         public bool IsNextTo(TileComponent start, TileComponent end)
         {
-            return gamePieceManager.IsNextTo(start, end);
+            return _gamePieceManager.IsNextTo(start, end);
         }
 
         public List<BaseGamePiece> FindHorizontalMatches(int startX, int startY, int minLenght = 3)
@@ -85,17 +85,17 @@ namespace _Project.Scripts.Game.Board
 
         public List<BaseGamePiece> CollapseColumnByPieces(List<BaseGamePiece> gamePieces)
         {
-            return collapseManager.CollapseColumnByPieces(gamePieces);
+            return _collapseController.CollapseColumnByPieces(gamePieces);
         }
 
         public List<BaseGamePiece> GetBombedPieces(List<BaseGamePiece> gamePieces)
         {
-            return bombManager.GetBombedPieces(gamePieces);
+            return _bombController.GetBombedPieces(gamePieces);
         }
 
         public bool IsCornerMatch(List<BaseGamePiece> gamePieces)
         {
-            return gamePieceManager.IsCornerMatch(gamePieces);
+            return _gamePieceManager.IsCornerMatch(gamePieces);
         }
         public List<BaseGamePiece> ListCheck(List<BaseGamePiece> leftMatches, ref List<BaseGamePiece> downwardMatches)
         {
