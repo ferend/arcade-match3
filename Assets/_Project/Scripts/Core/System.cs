@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using _Project.Scripts.Core;
-using _Project.Scripts.Match3;
 using UnityEngine;
 
 namespace Game
