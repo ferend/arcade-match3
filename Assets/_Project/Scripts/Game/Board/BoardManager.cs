@@ -27,9 +27,6 @@ namespace _Project.Scripts.Game.Board
         public event Action<int, int, int> ClearPiecePfxEvent;
         public event Action<int, int, int> BombPiecePfxEvent;
         public event Action<int ,int, int, int> BreakTilePfxEvent;
-        public event Action<int> AddScoreEvent;
-        public event Action<int> MovesLeftEvent;
-        public event Action GameStatusEvent;
         public event Action PlayPopSoundEvent;
         public event Action PlayBombSoundEvent;
         
@@ -44,19 +41,18 @@ namespace _Project.Scripts.Game.Board
 
         private Bomb _clickedTileBomb;
         private Bomb _targetTileBomb;
-        
+
+        private void Awake()
+        {
+            boardComponent.gameObject.SetActive(true);
+            boardComponent.SetupBoardComponent();
+        }
+
         public override void Setup()
         {
             _swapWaiter = new WaitForSeconds(_swapTime);
             _collapseWaiter = new WaitForSeconds(0.25f);
-        }
 
-        public void SetGameBoard()
-        {
-            boardComponent.gameObject.SetActive(true);
-            
-            InitTileArray();
-            InitGamePieceArray();
             SetupTiles();
             SetupGamePieces();
             FillBoard();
@@ -65,15 +61,7 @@ namespace _Project.Scripts.Game.Board
             boardComponent.collectibleCount = startingCollectibles.Count;
             boardComponent.removeCollectibleDelegate = RemoveCollectibles;
         }
-
-        public void CloseGameBoard()
-        {
-            boardComponent.gameObject.SetActive(false);
-        }
-        
-        private void InitTileArray() => boardComponent.tileArray = new TileComponent[boardComponent.width, boardComponent.height];
-        private void InitGamePieceArray() => boardComponent.gamePieceArray = new BaseGamePiece[boardComponent.width, boardComponent.height];
-
+  
         private void SetupTiles()
         {
             foreach (StartingTile sTile in boardComponent.startingTiles)
@@ -179,9 +167,7 @@ namespace _Project.Scripts.Game.Board
                 PlayPopSoundEvent?.Invoke();
 
                 ClearPieceAtPosition(piece.xIndex, piece.yIndex);
-
-                AddScoreEvent?.Invoke(piece.scoreValue);
-
+                
                 if (bombedPieces.Contains(piece))
                 {
                     BombPiecePfxEvent?.Invoke(piece.xIndex,piece.yIndex,0);
@@ -225,8 +211,8 @@ namespace _Project.Scripts.Game.Board
 
         bool HasMatchOnFill(int x, int y, int minLenght = 3)
         {
-            List<BaseGamePiece> leftMatches = boardComponent.FindMatches(x, y, new Vector2(-1, 0), minLenght);
-            List<BaseGamePiece> downwardMatches = boardComponent.FindMatches(x, y, new Vector2(0, -1), minLenght);
+            List<BaseGamePiece> leftMatches = boardComponent.matchFinder.FindMatches(x, y, new Vector2(-1, 0), minLenght);
+            List<BaseGamePiece> downwardMatches = boardComponent.matchFinder.FindMatches(x, y, new Vector2(0, -1), minLenght);
 
             leftMatches = boardComponent.ListCheck(leftMatches, ref downwardMatches);
 
@@ -288,7 +274,6 @@ namespace _Project.Scripts.Game.Board
         
         public void ReleaseTile()
         {
-            GameStatusEvent?.Invoke();
 
             if (boardComponent.clickedTileComponent != null && boardComponent.targetTileComponent != null  && canGetInput )
             {
@@ -329,8 +314,6 @@ namespace _Project.Scripts.Game.Board
                     }
                     else
                     {
-                        UpdateMovesLeft();
-
                         yield return _swapWaiter;
 
                         if (boardComponent.dropBombAfterMatch)
@@ -354,12 +337,7 @@ namespace _Project.Scripts.Game.Board
                 
             }
         }
-
-        private void UpdateMovesLeft()
-        {
-            boardComponent.movesLeft--;
-            MovesLeftEvent?.Invoke(boardComponent.movesLeft);
-        }
+        
 
         private List<BaseGamePiece> CombineMatches(int x, int y)
         {

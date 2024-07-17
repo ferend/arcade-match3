@@ -547,27 +547,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86ffab73e97ee9c439c67cf139e068c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dropBombAfterMatch: 1
+  dropBombAfterMatch: 0
   matchCountForBombDrop: 4
   matchCountForColorBombDrop: 5
-  maxCollectibleCount: 4
-  collectibleCount: 6
-  movesLeft: 30
-  targetScoreToWin: 3000
+  maxCollectibleCount: 3
+  collectibleCount: 0
   chanceForCollectible: 0.1
-  startingTiles:
-  - tilePrefab: {fileID: 1863056523224149403, guid: d0283ba3683c43a449a77b629bc5f774, type: 3}
-    x: 2
-    y: 2
-    z: 0
-  - tilePrefab: {fileID: 3491900539973545133, guid: 0bd1ec920c13c184cb40e8a38509f855, type: 3}
-    x: 2
-    y: 3
-    z: 0
-  - tilePrefab: {fileID: 1863056523224149403, guid: d0283ba3683c43a449a77b629bc5f774, type: 3}
-    x: 2
-    y: 5
-    z: 0
+  startingTiles: []
   startingGamePieces: []
 --- !u!1 &1825245320
 GameObject:
