@@ -1,8 +1,8 @@
 ﻿using System;
+using _Project.Scripts.Core;
 using UnityEngine;
-using UnityEngine.Serialization;
 
-namespace _Project.Scripts.Match3.Game.Effects
+namespace _Project.Scripts.Game.Particles
 {
     public class ParticleManager : Manager
     {

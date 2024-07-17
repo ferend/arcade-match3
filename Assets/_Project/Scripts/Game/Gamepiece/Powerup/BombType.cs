@@ -1,4 +1,4 @@
-﻿namespace _Project.Scripts.Match3.Game.Powerup
+﻿namespace _Project.Scripts.Game.Gamepiece
 {
     public enum BombType
     {

@@ -1,9 +1,9 @@
-using System.Collections.Generic;
-using _Project.Scripts.Match3.Game.PieceActor;
-using _Project.Scripts.Match3.Utility;
-using UnityEngine;
 
-namespace _Project.Scripts.Match3.Game.Powerup
+
+using System.Collections.Generic;
+using _Project.Scripts.Utility;
+
+namespace _Project.Scripts.Game.Gamepiece
 {
     public class Bomb : BaseGamePiece
     {

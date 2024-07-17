@@ -1,11 +1,11 @@
-using _Project.Scripts.Match3.Game.BoardActor;
-using _Project.Scripts.Match3.Game.Effects;
-using _Project.Scripts.Match3.Game.Input;
-using _Project.Scripts.Match3.Game.Player;
-using _Project.Scripts.Match3.Game.Sound;
-using UnityEngine;
 
-namespace _Project.Scripts.Match3.Game
+
+using _Project.Scripts.Audio;
+using _Project.Scripts.Game.Board;
+using _Project.Scripts.Game.Particles;
+using _Project.Scripts.Game.Player;
+
+namespace _Project.Scripts.Game
 {
     public class GameplaySystem : global::Game.System
     {

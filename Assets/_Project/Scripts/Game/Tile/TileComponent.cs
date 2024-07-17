@@ -1,11 +1,11 @@
 using System;
 using System.Collections;
-using _Project.Scripts.Match3.Actor;
-using _Project.Scripts.Match3.Game.BoardActor;
+using _Project.Scripts.Game.Board;
+using _Project.Scripts.Game.Tile;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace _Project.Scripts.Match3.Game.TileActor
+namespace _Project.Scripts.Game.TileActor
 {
     [RequireComponent(typeof(SpriteRenderer))]
     public class TileComponent : MonoBehaviour

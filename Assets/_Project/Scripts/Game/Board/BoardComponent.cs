@@ -1,15 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using _Project.Scripts.Match3.Actor;
-using _Project.Scripts.Match3.Game.PieceActor;
-using _Project.Scripts.Match3.Game.Powerup;
-using _Project.Scripts.Match3.Game.TileActor;
-using _Project.Scripts.Match3.Utility;
-using UnityEditor;
+using _Project.Scripts.Game.Gamepiece;
+using _Project.Scripts.Game.Tile;
+using _Project.Scripts.Game.TileActor;
+using _Project.Scripts.Utility;
 using UnityEngine;
 
-namespace _Project.Scripts.Match3.Game.BoardActor
+namespace _Project.Scripts.Game.Board
 {
     
     public class BoardComponent : MonoBehaviour

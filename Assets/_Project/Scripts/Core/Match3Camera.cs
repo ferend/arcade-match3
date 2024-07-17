@@ -1,7 +1,4 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using _Project.Scripts.Match3.Utility;
+using _Project.Scripts.Utility;
 using UnityEngine;
 
 public class Match3Camera : MonoBehaviour

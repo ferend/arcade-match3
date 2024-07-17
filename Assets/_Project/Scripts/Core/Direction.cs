@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace _Project.Scripts.Match3
+namespace _Project.Scripts.Score
 {
     public class Direction
     {

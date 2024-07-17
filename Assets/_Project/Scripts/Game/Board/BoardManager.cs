@@ -2,20 +2,19 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using _Project.Scripts.Match3.Actor;
-using _Project.Scripts.Match3.Game.Collectibles;
-using _Project.Scripts.Match3.Game.PieceActor;
-using _Project.Scripts.Match3.Game.Powerup;
-using _Project.Scripts.Match3.Game.TileActor;
-using _Project.Scripts.Match3.Utility;
+using _Project.Scripts.Core;
+using _Project.Scripts.Game.Gamepiece;
+using _Project.Scripts.Game.Tile;
+using _Project.Scripts.Game.TileActor;
+using _Project.Scripts.Utility;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace _Project.Scripts.Match3.Game.BoardActor
+namespace _Project.Scripts.Game.Board
 {
     public class BoardManager : Manager
     {
-        internal BoardComponent boardComponent;
+        [SerializeField] internal BoardComponent boardComponent;
         [SerializeField] private BaseGamePiece baseGamePiece;
 
         public bool canGetInput = true;

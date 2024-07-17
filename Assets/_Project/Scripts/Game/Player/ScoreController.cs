@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace _Project.Scripts.Match3.Game.Player
+namespace  _Project.Scripts.Game.Player
 {
     public class ScoreController
     {

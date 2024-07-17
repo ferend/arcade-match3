@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace _Project.Scripts.Match3.Utility
+namespace _Project.Scripts.Utility
 {
     public static class Constants
     {

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
+using _Project.Scripts.Core;
 using UnityEngine;
-using UnityEngine.Serialization;
 
-namespace _Project.Scripts.Match3.Game.Sound
+namespace _Project.Scripts.Audio
 {
     public class SoundManager : Manager
     {

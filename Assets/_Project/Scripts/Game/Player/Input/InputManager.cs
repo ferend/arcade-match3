@@ -1,8 +1,9 @@
 ﻿using System;
-using _Project.Scripts.Match3.Game.TileActor;
+using _Project.Scripts.Core;
+using _Project.Scripts.Game.TileActor;
 using UnityEngine;
 
-namespace _Project.Scripts.Match3.Game.Input
+namespace  _Project.Scripts.Game.Player
 {
     public class InputManager : Manager
     {

@@ -1,4 +1,4 @@
-﻿namespace _Project.Scripts.Match3.Actor
+﻿namespace _Project.Scripts.Game.Tile
 {
     public enum TileType
     {

@@ -1,7 +1,8 @@
 ﻿using System;
+using _Project.Scripts.Score;
 using UnityEngine;
 
-namespace _Project.Scripts.Match3.Input
+namespace  _Project.Scripts.Game.Player
 {
     
     public enum InputType

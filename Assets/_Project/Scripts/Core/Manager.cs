@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace _Project.Scripts.Match3
+namespace _Project.Scripts.Core
 {
     public abstract class Manager : MonoBehaviour
     {

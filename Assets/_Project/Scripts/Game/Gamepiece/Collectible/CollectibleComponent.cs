@@ -1,9 +1,6 @@
-using System;
-using _Project.Scripts.Match3.Game.PieceActor;
-using _Project.Scripts.Match3.Utility;
-using UnityEngine;
+using _Project.Scripts.Utility;
 
-namespace _Project.Scripts.Match3.Game.Collectibles
+namespace _Project.Scripts.Game.Gamepiece
 {
     public class CollectibleComponent : BaseGamePiece
     {

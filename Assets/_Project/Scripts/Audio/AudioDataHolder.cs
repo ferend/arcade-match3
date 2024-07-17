@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace _Project.Scripts.Match3.Game.Sound
+namespace _Project.Scripts.Audio
 {
     [CreateAssetMenu(fileName = "AudioDataCollection", menuName = "CustomAudio/AudioDataCollection")]
     public class AudioDataHolder : ScriptableObject
