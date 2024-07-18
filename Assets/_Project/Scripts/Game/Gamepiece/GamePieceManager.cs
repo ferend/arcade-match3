@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using _Project.Scripts.Game.Gamepiece;
+using _Project.Scripts.Game.Tile;
 using _Project.Scripts.Game.TileActor;
 using _Project.Scripts.Utility;
 
@@ -130,6 +132,93 @@ namespace _Project.Scripts.Game.Board
             return bomb != null && bomb.bombType == BombType.Color;
         }
 
+         public void SetupGamePieces(BoardComponent boardComponent)
+        {
+            foreach (StartingTile sPiece in boardComponent.levelData.startingGamePieces)
+            {
+                if (sPiece != null)
+                {
+                    BaseGamePiece piece = Object.Instantiate(sPiece.tilePrefab, new Vector3(sPiece.x, sPiece.y, 0),
+                        Quaternion.identity).GetComponent<BaseGamePiece>();
+                    CreateGamePiece(boardComponent, piece, sPiece.x, sPiece.y, 10, 0.1f);
+                }
+            }
+        }
+
+        public void ClearPieceAtPosition(BoardComponent boardComponent, int x, int y)
+        {
+            BaseGamePiece pieceToClear = boardComponent.gamePieceArray[x, y];
+            if (pieceToClear != null)
+            {
+                boardComponent.gamePieceArray[x, y] = null;
+                Object.Destroy(pieceToClear.gameObject);
+            }
+        }
+
+        public void CreateGamePiece(BoardComponent boardComponent, BaseGamePiece prefab, int x, int y, int falseYOffset = 0, float moveTime = 0.1f)
+        {
+            if (prefab != null && ExtensionMethods.IsInBounds(x, y, boardComponent.width, boardComponent.height))
+            {
+                prefab.SetBoard(boardComponent);
+                boardComponent.PlaceGamePiece(prefab, x, y);
+                if (falseYOffset != 0)
+                {
+                    prefab.transform.position = new Vector3(x, y + falseYOffset, 0);
+                    prefab.MoveGamePiece(x, y, moveTime);
+                }
+                prefab.transform.parent = boardComponent.transform;
+                prefab.GetComponent<BaseGamePiece>();
+            }
+        }
+
+        public List<BaseGamePiece> FindAllCollectibles(BoardComponent boardComponent)
+        {
+            List<BaseGamePiece> foundCollectibles = new List<BaseGamePiece>();
+            for (int i = 0; i < boardComponent.height; i++)
+            {
+                List<BaseGamePiece> collectibleRow = FindCollectiblesAt(boardComponent, i);
+                foundCollectibles = foundCollectibles.Union(collectibleRow).ToList();
+            }
+            return foundCollectibles;
+        }
+
+        public List<BaseGamePiece> FindCollectiblesAt(BoardComponent boardComponent, int row, bool collectedAtBottom = false)
+        {
+            List<BaseGamePiece> foundCollectibles = new List<BaseGamePiece>();
+            for (int i = 0; i < boardComponent.width; i++)
+            {
+                if (boardComponent.gamePieceArray[i, row] != null)
+                {
+                    CollectibleComponent collectibleComponent = boardComponent.gamePieceArray[i, row].GetComponent<CollectibleComponent>();
+                    if (collectibleComponent != null)
+                    {
+                        if (!collectedAtBottom || (collectedAtBottom && collectibleComponent.clearedAtBottom))
+                        {
+                            foundCollectibles.Add(boardComponent.gamePieceArray[i, row]);
+                        }
+                    }
+                }
+            }
+            return foundCollectibles;
+        }
+
+        public List<BaseGamePiece> RemoveCollectibles(BoardComponent boardComponent, List<BaseGamePiece> bombedPieces)
+        {
+            List<BaseGamePiece> collectiblePieces = FindAllCollectibles(boardComponent);
+            List<BaseGamePiece> intersectingPieces = bombedPieces.Intersect(collectiblePieces).ToList();
+            if (intersectingPieces.Count > 0)
+            {
+                foreach (BaseGamePiece piece in intersectingPieces)
+                {
+                    if (piece != null)
+                    {
+                        Object.Destroy(piece.gameObject);
+                    }
+                }
+                return intersectingPieces;
+            }
+            return null;
+        }
         
     }
 }

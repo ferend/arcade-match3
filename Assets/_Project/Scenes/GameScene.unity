@@ -547,14 +547,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86ffab73e97ee9c439c67cf139e068c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dropBombAfterMatch: 0
-  matchCountForBombDrop: 4
-  matchCountForColorBombDrop: 5
-  maxCollectibleCount: 3
-  collectibleCount: 0
-  chanceForCollectible: 0.1
-  startingTiles: []
-  startingGamePieces: []
+  levelData: {fileID: 11400000, guid: bff998e36b4c8fe4184281c7d1ef9a9a, type: 2}
 --- !u!1 &1825245320
 GameObject:
   m_ObjectHideFlags: 0

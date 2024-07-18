@@ -13,7 +13,7 @@ namespace _Project.Scripts.Game.Board
         {
             private readonly BaseGamePiece[,] gamePieceArray;
 
-            public BombController(BaseGamePiece[,] gamePieceArray, BoardComponent.RemoveCollectibleDelegate removeCollectibleDelegate)
+            public BombController(BaseGamePiece[,] gamePieceArray)
             {
                 this.gamePieceArray = gamePieceArray;
             }

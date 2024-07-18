@@ -58,13 +58,12 @@ namespace _Project.Scripts.Game.Board
             FillBoard();
             
             List<BaseGamePiece> startingCollectibles = FindAllCollectibles();
-            boardComponent.collectibleCount = startingCollectibles.Count;
-            boardComponent.removeCollectibleDelegate = RemoveCollectibles;
+            boardComponent.levelData.collectibleCount = startingCollectibles.Count;
         }
   
         private void SetupTiles()
         {
-            foreach (StartingTile sTile in boardComponent.startingTiles)
+            foreach (StartingTile sTile in boardComponent.levelData.startingTiles)
             {
                 if(sTile == null) return;
                 CreateTile(sTile.tilePrefab,sTile.x,sTile.y);
@@ -84,7 +83,7 @@ namespace _Project.Scripts.Game.Board
         
         private void SetupGamePieces()
         {
-            foreach (StartingTile sPiece in boardComponent.startingGamePieces)
+            foreach (StartingTile sPiece in boardComponent.levelData.startingGamePieces)
             {
                 if (sPiece != null)
                 {
@@ -123,7 +122,7 @@ namespace _Project.Scripts.Game.Board
                         if (j == boardComponent.height - 1 && CanAddCollectible())
                         {
                             FillRandomCollectibleAt(i,j, falseYOffset);
-                            boardComponent.collectibleCount++;
+                            boardComponent.levelData.collectibleCount++;
                         }
                         else
                         {
@@ -316,7 +315,7 @@ namespace _Project.Scripts.Game.Board
                     {
                         yield return _swapWaiter;
 
-                        if (boardComponent.dropBombAfterMatch)
+                        if (boardComponent.levelData.dropBombAfterMatch)
                         {
                             PerformDropBomb(clickedPieceMatches, targetPieceMatches);
                         }
@@ -388,7 +387,7 @@ namespace _Project.Scripts.Game.Board
                 List<BaseGamePiece> allCollectibles = FindAllCollectibles();
                 List<BaseGamePiece> blockers = gamePieces.Intersect(allCollectibles).ToList();
                 collectedPieces = collectedPieces.Union(blockers).ToList();
-                boardComponent.collectibleCount -= collectedPieces.Count;
+                boardComponent.levelData.collectibleCount -= collectedPieces.Count;
 
                 gamePieces = gamePieces.Union(collectedPieces).ToList();
 
@@ -477,7 +476,7 @@ namespace _Project.Scripts.Game.Board
         {
             Bomb bomb = null;
 
-            if (gamePieces.Count >= boardComponent.matchCountForBombDrop)
+            if (gamePieces.Count >= boardComponent.levelData.matchCountForBombDrop)
             {
                 if (boardComponent.IsCornerMatch(gamePieces))
                 {
@@ -488,7 +487,7 @@ namespace _Project.Scripts.Game.Board
                 }
                 else
                 {
-                    if (gamePieces.Count >= boardComponent.matchCountForColorBombDrop)
+                    if (gamePieces.Count >= boardComponent.levelData.matchCountForColorBombDrop)
                     {
                         bomb = CreateBomb(colorBombPrefab, x, y);
                     }
@@ -577,8 +576,8 @@ namespace _Project.Scripts.Game.Board
 
         bool CanAddCollectible()
         {
-            return (Random.Range(0f, 1f) <= boardComponent.chanceForCollectible && collectiblePrefabs.Length > 0 &&
-                    boardComponent.collectibleCount < boardComponent.maxCollectibleCount);
+            return (Random.Range(0f, 1f) <= boardComponent.levelData.chanceForCollectible && collectiblePrefabs.Length > 0 &&
+                    boardComponent.levelData.collectibleCount < boardComponent.levelData.maxCollectibleCount);
         }
 
 

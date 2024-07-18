@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 133b9252c1b74b1998337d0e7f389f5d, type: 3}
+  m_Name: LevelData
+  m_EditorClassIdentifier: 
+  dropBombAfterMatch: 1
+  matchCountForBombDrop: 4
+  matchCountForColorBombDrop: 5
+  maxCollectibleCount: 3
+  collectibleCount: 3
+  chanceForCollectible: 0.1
+  startingTiles:
+  - tilePrefab: {fileID: 1863056523224149403, guid: d0283ba3683c43a449a77b629bc5f774, type: 3}
+    x: 2
+    y: 7
+    z: 0
+  - tilePrefab: {fileID: 3491900539973545133, guid: 0bd1ec920c13c184cb40e8a38509f855, type: 3}
+    x: 4
+    y: 6
+    z: 0
+  - tilePrefab: {fileID: 3491900539973545133, guid: 0bd1ec920c13c184cb40e8a38509f855, type: 3}
+    x: 4
+    y: 7
+    z: 0
+  startingGamePieces: []
