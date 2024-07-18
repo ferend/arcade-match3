@@ -5,13 +5,13 @@ using UnityEngine;
 
 namespace _Project.Scripts.Game.Board
 {
-    public class MatchFinder
+    public class MatchAction
     {
         private readonly int width;
         private readonly int height;
         private readonly BaseGamePiece[,] gamePieceArray;
 
-        public MatchFinder(int width, int height, BaseGamePiece[,] gamePieceArray)
+        public MatchAction(int width, int height, BaseGamePiece[,] gamePieceArray)
         {
             this.width = width;
             this.height = height;

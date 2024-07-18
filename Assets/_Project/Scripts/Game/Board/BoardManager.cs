@@ -210,8 +210,8 @@ namespace _Project.Scripts.Game.Board
 
         bool HasMatchOnFill(int x, int y, int minLenght = 3)
         {
-            List<BaseGamePiece> leftMatches = boardComponent.matchFinder.FindMatches(x, y, new Vector2(-1, 0), minLenght);
-            List<BaseGamePiece> downwardMatches = boardComponent.matchFinder.FindMatches(x, y, new Vector2(0, -1), minLenght);
+            List<BaseGamePiece> leftMatches = boardComponent.matchAction.FindMatches(x, y, new Vector2(-1, 0), minLenght);
+            List<BaseGamePiece> downwardMatches = boardComponent.matchAction.FindMatches(x, y, new Vector2(0, -1), minLenght);
 
             leftMatches = boardComponent.ListCheck(leftMatches, ref downwardMatches);
 

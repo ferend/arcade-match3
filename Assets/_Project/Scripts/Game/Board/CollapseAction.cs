@@ -10,14 +10,14 @@ using UnityEngine;
 
 namespace _Project.Scripts.Game.Board
 {
-    public class CollapseController
+    public class CollapseAction
     {
         private readonly int width;
         private readonly int height;
         private readonly BaseGamePiece[,] gamePieceArray;
         private readonly TileComponent[,] tileArray;
 
-        public CollapseController(int width, int height, BaseGamePiece[,] gamePieceArray, TileComponent[,] tileArray)
+        public CollapseAction(int width, int height, BaseGamePiece[,] gamePieceArray, TileComponent[,] tileArray)
         {
             this.width = width;
             this.height = height;

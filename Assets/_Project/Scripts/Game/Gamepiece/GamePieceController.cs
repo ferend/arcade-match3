@@ -8,13 +8,13 @@ using _Project.Scripts.Utility;
 
 namespace _Project.Scripts.Game.Board
 {
-    public class GamePieceManager
+    public class GamePieceController
     {
         private readonly int width;
         private readonly int height;
         private readonly BaseGamePiece[,] gamePieceArray;
 
-        public GamePieceManager(int width, int height, BaseGamePiece[,] gamePieceArray)
+        public GamePieceController(int width, int height, BaseGamePiece[,] gamePieceArray)
         {
             this.width = width;
             this.height = height;
