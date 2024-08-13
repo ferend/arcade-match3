@@ -9,7 +9,7 @@ namespace _Project.Script.UI
 
         private void Awake()
         {
-            ServiceLocator.RegisterService(this); // Register UIManager as a service
+            ServiceLocator.RegisterService(this); 
 
             UIElement[] elements = GetComponentsInChildren<UIElement>(true);
             foreach (UIElement element in elements)

@@ -20,7 +20,9 @@ namespace _Project.Scripts.Audio
 
         public void Awake()
         {
-            ServiceLocator.RegisterService(this); 
+            ServiceLocator.RegisterService(this);
+
+            if (collection == null) return;
 
             foreach (AudioData audio in collection.GetCollection())
             {
