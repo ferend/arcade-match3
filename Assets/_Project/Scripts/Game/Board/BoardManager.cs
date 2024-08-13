@@ -27,8 +27,7 @@ namespace _Project.Scripts.Game.Board
         public event Action<int, int, int> ClearPiecePfxEvent;
         public event Action<int, int, int> BombPiecePfxEvent;
         public event Action<int ,int, int, int> BreakTilePfxEvent;
-        public event Action PlayPopSoundEvent;
-        public event Action PlayBombSoundEvent;
+
         
         [Space(10)]
         [Header("Prefabs")]
@@ -163,14 +162,11 @@ namespace _Project.Scripts.Game.Board
         {
             foreach (BaseGamePiece piece in gamePieces)
             {
-                PlayPopSoundEvent?.Invoke();
-
                 ClearPieceAtPosition(piece.xIndex, piece.yIndex);
                 
                 if (bombedPieces.Contains(piece))
                 {
                     BombPiecePfxEvent?.Invoke(piece.xIndex,piece.yIndex,0);
-                    PlayBombSoundEvent?.Invoke();
                 }
                 else
                 {

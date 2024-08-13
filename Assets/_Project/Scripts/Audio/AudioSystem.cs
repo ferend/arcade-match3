@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace _Project.Scripts.Audio
 {
-    public class SoundManager : Manager
+    public class AudioSystem : global::Game.System
     {
         [SerializeField] private List<AudioSource> sources;
         [SerializeField] private List<AudioSource> oneShotSources;
@@ -18,8 +18,10 @@ namespace _Project.Scripts.Audio
         internal bool mutedMusic = false;
         internal bool mutedSFX = false;
 
-        public override void Setup()
+        public void Awake()
         {
+            ServiceLocator.RegisterService(this); 
+
             foreach (AudioData audio in collection.GetCollection())
             {
                 AudioDict.Add(audio.AudioName, audio);
